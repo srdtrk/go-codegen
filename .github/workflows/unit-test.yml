@@ -1,4 +1,4 @@
-name: build
+name: unit-test
 on:
   push:
     branches: [main]
@@ -8,13 +8,13 @@ on:
 permissions:
   contents: read
 jobs:
-  build:
-    name: Build
+  test:
+    name: Unit Test go-codegen
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v4
         with:
           go-version: "1.21"
       - uses: actions/checkout@v4
-      - name: Build
-        run: make build
+      - name: Unit Test go-codegen
+        run: make unit-test
