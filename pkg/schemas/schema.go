@@ -8,15 +8,15 @@ import (
 // JSONSchema represents a JSON Schema object type.
 // based on https://github.com/CosmWasm/ts-codegen/blob/eeba0cf1e0cbadfb6cfc103412108e763fdb9f6a/packages/wasm-ast-types/types/types.d.ts#L25
 type JSONSchema struct {
-	Schema               string                 `json:"$schema,omitempty"`              // Section 6.1.
-	Ref                  string                 `json:"$ref,omitempty"`                 // Section 7.
+	Schema               *string                `json:"$schema,omitempty"`              // Section 6.1.
+	Ref                  *string                `json:"$ref,omitempty"`                 // Section 7.
 	AdditionalItems      *JSONSchema            `json:"additionalItems,omitempty"`      // Section 5.9.
 	Items                *JSONSchemaList        `json:"items,omitempty"`                // Section 5.9.
 	Required             []string               `json:"required,omitempty"`             // Section 5.15.
 	Properties           map[string]*JSONSchema `json:"properties,omitempty"`           // Section 5.16.
 	PatternProperties    map[string]*JSONSchema `json:"patternProperties,omitempty"`    // Section 5.17.
 	AdditionalProperties *bool                  `json:"additionalProperties,omitempty"` // Section 5.18.
-	Type                 string                 `json:"type,omitempty"`                 // Section 5.21.
+	Type                 TypeList               `json:"type,omitempty"`                 // Section 5.21.
 	AllOf                []*JSONSchema          `json:"allOf,omitempty"`                // Section 5.22.
 	AnyOf                []*JSONSchema          `json:"anyOf,omitempty"`                // Section 5.23.
 	OneOf                []*JSONSchema          `json:"oneOf,omitempty"`                // Section 5.24.
@@ -46,6 +46,35 @@ func (l *JSONSchemaList) UnmarshalJSON(raw []byte) error {
 	}
 
 	*l = []JSONSchema{s}
+
+	return nil
+}
+
+type TypeList []string
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (t *TypeList) UnmarshalJSON(b []byte) error {
+	if len(b) > 0 && b[0] == '[' {
+		var s []string
+		if err := json.Unmarshal(b, &s); err != nil {
+			return fmt.Errorf("failed to unmarshal type list: %w", err)
+		}
+
+		*t = s
+
+		return nil
+	}
+
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return fmt.Errorf("failed to unmarshal type list: %w", err)
+	}
+
+	if s != "" {
+		*t = []string{s}
+	} else {
+		*t = nil
+	}
 
 	return nil
 }
