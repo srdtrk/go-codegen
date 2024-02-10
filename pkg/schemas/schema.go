@@ -11,7 +11,7 @@ type JSONSchema struct {
 	Schema               *string                `json:"$schema,omitempty"`              // Section 6.1.
 	Ref                  *string                `json:"$ref,omitempty"`                 // Section 7.
 	AdditionalItems      *JSONSchema            `json:"additionalItems,omitempty"`      // Section 5.9.
-	Items                *JSONSchemaList        `json:"items,omitempty"`                // Section 5.9.
+	Items                JSONSchemaList         `json:"items,omitempty"`                // Section 5.9.
 	Required             []string               `json:"required,omitempty"`             // Section 5.15.
 	Properties           map[string]*JSONSchema `json:"properties,omitempty"`           // Section 5.16.
 	PatternProperties    map[string]*JSONSchema `json:"patternProperties,omitempty"`    // Section 5.17.
