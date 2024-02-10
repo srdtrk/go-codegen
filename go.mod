@@ -3,6 +3,7 @@ module github.com/srdtrk/go-codegen
 go 1.21.5
 
 require (
+	github.com/dave/jennifer v1.7.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 )
