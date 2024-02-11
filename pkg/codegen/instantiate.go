@@ -22,6 +22,8 @@ func GenerateInstantiateMsg(f *jen.File, schema *schemas.JSONSchema) {
 	f.Type().Id(schema.Title).Struct(
 		GenerateFieldsFromProperties(schema.Properties)...,
 	)
+
+	GenerateDefinitions(f, schema.Definitions)
 }
 
 func validateAsInstantiateMsg(schema *schemas.JSONSchema) error {

@@ -83,26 +83,26 @@ func getType(name string, schema *schemas.JSONSchema) (string, error) {
 		return typeStr, nil
 	}
 
-	isOptional := slices.Contains(schema.Type, "null")
+	isOptional := slices.Contains(schema.Type, schemas.TypeNameNull)
 
 	var typeStr string
 	switch schema.Type[0] {
-	case "string":
+	case schemas.TypeNameString:
 		typeStr = "string"
-	case "integer":
+	case schemas.TypeNameInteger:
 		typeStr = "int"
-	case "number":
+	case schemas.TypeNameNumber:
 		typeStr = "float64"
-	case "boolean":
+	case schemas.TypeNameBoolean:
 		typeStr = "bool"
-	case "array":
+	case schemas.TypeNameArray:
 		baseType, err := getType(schema.Title, &schema.Items[0])
 		if err != nil {
 			return "", err
 		}
 
 		typeStr = "[]" + baseType
-	case "object":
+	case schemas.TypeNameObject:
 		typeStr = schema.Title
 	default:
 		return "", fmt.Errorf("cannot determine the type of %s", name)
