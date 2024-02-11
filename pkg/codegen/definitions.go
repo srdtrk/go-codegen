@@ -2,12 +2,15 @@ package codegen
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
+
+const defPrefix = "#/definitions/"
 
 var globalDefRegistry = map[string]*schemas.JSONSchema{}
 
@@ -27,7 +30,7 @@ func GenerateDefinitions(f *jen.File, defs map[string]*schemas.JSONSchema) {
 func registerDefinition(ref string, schema *schemas.JSONSchema) bool {
 	// check if the ref is already registered
 	if regSchema, ok := globalDefRegistry[ref]; ok {
-		if regSchema != schema {
+		if regSchema.Title != schema.Title || regSchema.Description != schema.Description {
 			panic(fmt.Sprintf("definition %s is already registered with a different schema", ref))
 		}
 
@@ -45,17 +48,28 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 
 	switch {
 	case len(schema.Type) == 1:
-		generateDefinitionType(f, name, schema)
+		err := generateDefinitionType(f, name, schema)
+		if err != nil {
+			panic(err)
+		}
 	case schema.OneOf != nil:
-		generateDefinitionOneOf(f, name, schema)
+		err := generateDefinitionOneOf(f, name, schema)
+		if err != nil {
+			panic(err)
+		}
+	case len(schema.AllOf) == 1:
+		err := generateDefinitionAllOf(f, name, schema)
+		if err != nil {
+			panic(err)
+		}
 	default:
 		panic(fmt.Sprintf("unsupported definition %s", name))
 	}
 }
 
-func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema) {
+func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema) error {
 	if err := validateAsDefinition(name, schema); err != nil {
-		panic(err)
+		return err
 	}
 
 	f.Comment(schema.Description)
@@ -64,7 +78,10 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 	case schemas.TypeNameString:
 		f.Type().Id(name).String()
 		if schema.Enum != nil {
-			generateEnumString(f, name, schema.Enum)
+			err := generateEnumString(f, name, schema.Enum)
+			if err != nil {
+				return err
+			}
 		}
 	case schemas.TypeNameInteger:
 		f.Type().Id(name).Int()
@@ -79,9 +96,12 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 	default:
 		panic(fmt.Sprintf("unsupported type %s for definition %s", schema.Type[0], name))
 	}
+
+	return nil
 }
 
-func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchema) {
+//nolint:unparam
+func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchema) error {
 	// if all enum values are strings, then generate a single string enum type
 	sEnum := []jen.Code{}
 	for i, oneOf := range schema.OneOf {
@@ -97,14 +117,16 @@ func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchem
 			f.Comment(schema.Description)
 			f.Type().Id(name).String()
 			f.Const().Defs(sEnum...)
-			return
+			return nil
 		}
 	}
 	// TODO: implement
+
+	return nil
 }
 
 // generateEnumString generates a string enum type.
-func generateEnumString(f *jen.File, name string, enum []string) {
+func generateEnumString(f *jen.File, name string, enum []string) error {
 	constants := make([]jen.Code, len(enum))
 	for i, e := range enum {
 		eName := name + "_" + strcase.ToCamel(e)
@@ -112,11 +134,30 @@ func generateEnumString(f *jen.File, name string, enum []string) {
 	}
 
 	f.Const().Defs(constants...)
+
+	return nil
+}
+
+func generateDefinitionAllOf(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	if len(schema.AllOf) != 1 || schema.AllOf[0].Ref == nil {
+		return fmt.Errorf("wrapper %s is not supported", name)
+	}
+
+	if !strings.HasPrefix(*schema.AllOf[0].Ref, defPrefix) {
+		return fmt.Errorf("ref %s is not a definition", *schema.AllOf[0].Ref)
+	}
+
+	defTypeName := strings.TrimPrefix(*schema.AllOf[0].Ref, defPrefix)
+
+	f.Comment(schema.Description)
+	f.Type().Id(name).Op(defTypeName)
+
+	return nil
 }
 
 // validateAsDefinition validates if the schema is a valid definition.
 func validateAsDefinition(name string, schema *schemas.JSONSchema) error {
-	if len(schema.Type) != 1 && schema.OneOf == nil {
+	if len(schema.Type) != 1 && schema.OneOf == nil && len(schema.AllOf) != 1 {
 		return fmt.Errorf("definition %s is unsupported", name)
 	}
 

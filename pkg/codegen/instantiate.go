@@ -13,12 +13,7 @@ func GenerateInstantiateMsg(f *jen.File, schema *schemas.JSONSchema) {
 		panic(err)
 	}
 
-	comment := schema.Description
-	if comment == "" {
-		comment = "The message to instantiate a new contract instance."
-	}
-
-	f.Comment(comment)
+	f.Comment(schema.Description)
 	f.Type().Id(schema.Title).Struct(
 		GenerateFieldsFromProperties(schema.Properties)...,
 	)
