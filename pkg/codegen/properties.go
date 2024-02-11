@@ -17,21 +17,25 @@ func GenerateFieldsFromProperties(props map[string]*schemas.JSONSchema) []jen.Co
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field
-		fields = append(fields, GenerateFieldFromSchema(name, schema, nil))
+		fields = append(fields, GenerateFieldFromSchema(name, schema, nil, ""))
 	}
 	return fields
 }
 
-func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool) jen.Code {
+func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) jen.Code {
+	if name == "" {
+		name = schema.Title
+	}
 	pascalName := strcase.ToCamel(name)
-	typeStr, err := getType(pascalName, schema, required)
+
+	typeStr, err := getType(pascalName, schema, required, typePrefix)
 	if err != nil {
 		panic(err)
 	}
 	return jen.Id(pascalName).Op(typeStr).Tag(map[string]string{"json": name + ",omitempty"})
 }
 
-func getType(name string, schema *schemas.JSONSchema, required *bool) (string, error) {
+func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) (string, error) {
 	if len(schema.Type) == 0 {
 		var underlyingSchemas []*schemas.JSONSchema
 		//nolint:gocritic //TODO(serdar): use switch
@@ -69,7 +73,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool) (string, e
 
 		var isOptional bool
 		if required != nil {
-			isOptional = *required
+			isOptional = !*required
 		} else {
 			isOptional = slices.ContainsFunc(underlyingSchemas, func(s *schemas.JSONSchema) bool {
 				return slices.Contains(s.Type, "null")
@@ -81,6 +85,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool) (string, e
 		}
 
 		typeStr := strings.TrimPrefix(*underlyingSchemas[0].Ref, defPrefix)
+		typeStr = typePrefix + typeStr
 		if isOptional {
 			typeStr = "*" + typeStr
 		}
@@ -88,7 +93,12 @@ func getType(name string, schema *schemas.JSONSchema, required *bool) (string, e
 		return typeStr, nil
 	}
 
-	isOptional := slices.Contains(schema.Type, schemas.TypeNameNull)
+	var isOptional bool
+	if required != nil {
+		isOptional = !*required
+	} else {
+		isOptional = slices.Contains(schema.Type, schemas.TypeNameNull)
+	}
 
 	var typeStr string
 	switch schema.Type[0] {
@@ -101,17 +111,28 @@ func getType(name string, schema *schemas.JSONSchema, required *bool) (string, e
 	case schemas.TypeNameBoolean:
 		typeStr = "bool"
 	case schemas.TypeNameArray:
-		baseType, err := getType(schema.Title, &schema.Items[0], nil)
+		baseType, err := getType(schema.Title, &schema.Items[0], nil, "")
 		if err != nil {
 			return "", err
 		}
 
 		typeStr = "[]" + baseType
 	case schemas.TypeNameObject:
-		typeStr = schema.Title
+		switch {
+		case schema.Title != "":
+			typeStr = schema.Title
+		case len(schema.Properties) == 1:
+			for k := range schema.Properties {
+				typeStr = strcase.ToCamel(k)
+			}
+		default:
+			return "", fmt.Errorf("cannot determine the type of object %s", name)
+		}
 	default:
 		return "", fmt.Errorf("cannot determine the type of %s", name)
 	}
+
+	typeStr = typePrefix + typeStr
 
 	if isOptional {
 		typeStr = "*" + typeStr

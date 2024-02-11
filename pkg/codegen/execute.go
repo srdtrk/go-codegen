@@ -15,7 +15,7 @@ func GenerateExecuteMsg(f *jen.File, schema *schemas.JSONSchema) {
 
 	f.Comment(schema.Description)
 	f.Type().Id(schema.Title).Struct(
-		GenerateFieldsFromProperties(schema.Properties)...,
+		GenerateFieldsFromOneOf(schema.OneOf, schema.Title+"_")...,
 	)
 
 	GenerateDefinitions(f, schema.Definitions)
@@ -25,8 +25,8 @@ func validateAsExecuteMsg(schema *schemas.JSONSchema) error {
 	if schema.Title != "ExecuteMsg" && schema.Title != "ExecuteMsg_for_Empty" {
 		return fmt.Errorf("title must be InstantiateMsg")
 	}
-	if schema.OneOf == nil {
-		return fmt.Errorf("ExecuteMsg must be an enum")
+	if len(schema.OneOf) == 0 {
+		return fmt.Errorf("ExecuteMsg is empty")
 	}
 
 	return nil
