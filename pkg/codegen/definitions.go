@@ -132,17 +132,40 @@ func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchem
 						jen.Id(camelKey).Op(refType).Tag(map[string]string{"json": k + ",omitempty"}),
 					)
 				} else {
-					generateDefinitionType(f, propName, prop)
+					err := generateDefinitionType(f, propName, prop)
+					if err != nil {
+						return err
+					}
 				}
 
 				f.Func().Params(
 					jen.Op("*").Id(propName),
 				).Id(funcName).Params().Block()
 			}
+
+		case schemas.TypeNameString:
+			if len(oneOf.Enum) != 1 {
+				panic(fmt.Errorf("unsupported enum variant %v", oneOf))
+			}
+
+			variantName := name + "_" + strcase.ToCamel(oneOf.Enum[0])
+
+			f.Var().Id("_").Op(name).Op("=").Params(
+				jen.Op("*").Op(variantName),
+			).Params(jen.Nil())
+
+			f.Type().Id(variantName).String()
+
+			constName := variantName + "_Value"
+			f.Const().Id(constName).Op(variantName).Op("=").Lit(oneOf.Enum[0])
+
+			f.Func().Params(
+				jen.Op("*").Id(variantName),
+			).Id(funcName).Params().Block()
 		}
 	}
 
-	// TODO: implement
+	// TODO: implement more cases and combine some cases such as all strings and all objects.
 
 	return nil
 }
