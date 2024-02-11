@@ -9,8 +9,6 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
 
-var enumPropertyDefinitions = map[string]*schemas.JSONSchema{}
-
 func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
 	ptrFalse := false
 	fields := []jen.Code{}
@@ -25,8 +23,11 @@ func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 				name = k
 
 				typeName := typePrefix + strcase.ToCamel(k)
-				enumPropertyDefinitions[typeName] = prop
+				RegisterDefinition(typeName, prop)
 			}
+		}
+		for name, def := range schema.Definitions {
+			RegisterDefinition(name, def)
 		}
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))

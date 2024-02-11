@@ -16,7 +16,7 @@ func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string) 
 	GenerateInstantiateMsg(f, idlSchema.Instantiate)
 	GenerateExecuteMsg(f, idlSchema.Execute)
 
-	GenerateDefinitions(f, enumPropertyDefinitions)
+	generateDefinitions(f)
 
 	if err := f.Save(outputPath); err != nil {
 		return err

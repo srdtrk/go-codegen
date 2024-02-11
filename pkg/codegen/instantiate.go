@@ -18,7 +18,9 @@ func GenerateInstantiateMsg(f *jen.File, schema *schemas.JSONSchema) {
 		GenerateFieldsFromProperties(schema.Properties)...,
 	)
 
-	GenerateDefinitions(f, schema.Definitions)
+	for name, def := range schema.Definitions {
+		RegisterDefinition(name, def)
+	}
 }
 
 func validateAsInstantiateMsg(schema *schemas.JSONSchema) error {

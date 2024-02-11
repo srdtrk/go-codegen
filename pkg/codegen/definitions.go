@@ -14,20 +14,16 @@ const defPrefix = "#/definitions/"
 
 var globalDefRegistry = map[string]*schemas.JSONSchema{}
 
-func GenerateDefinitions(f *jen.File, defs map[string]*schemas.JSONSchema) {
-	for name, schema := range defs {
-		if !registerDefinition(name, schema) {
-			continue
-		}
-
+func generateDefinitions(f *jen.File) {
+	for name, schema := range globalDefRegistry {
 		generateDefinition(f, name, schema)
 	}
 }
 
-// registerDefinition registers a definition to the global definition registry
+// RegisterDefinition registers a definition to the global definition registry
 // and returns true if the definition is successfully registered.
 // If the definition is already registered, it returns false.
-func registerDefinition(ref string, schema *schemas.JSONSchema) bool {
+func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 	// check if the ref is already registered
 	if regSchema, ok := globalDefRegistry[ref]; ok {
 		if regSchema.Title != schema.Title || regSchema.Description != schema.Description {
@@ -101,26 +97,51 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 	return nil
 }
 
-//nolint:unparam
 func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchema) error {
-	// if all enum values are strings, then generate a single string enum type
-	sEnum := []jen.Code{}
-	for i, oneOf := range schema.OneOf {
-		if len(oneOf.Type) != 1 || oneOf.Type[0] != schemas.TypeNameString || len(oneOf.Enum) != 1 {
-			break
+	funcName := "Implements_" + name
+	f.Comment(schema.Description)
+	f.Type().Id(name).Interface(jen.Id(funcName).Params())
+
+	for _, oneOf := range schema.OneOf {
+		if len(oneOf.Type) != 1 {
+			return fmt.Errorf("type of the enum variant %s is not supported", name)
 		}
+		switch oneOf.Type[0] {
+		case schemas.TypeNameObject:
+			if len(oneOf.Properties) != 1 {
+				return fmt.Errorf("properties of the enum variant %s is not supported", name)
+			}
 
-		sEnum = append(sEnum, jen.Comment(oneOf.Description))
-		eName := name + "_" + strcase.ToCamel(oneOf.Enum[0])
-		sEnum = append(sEnum, jen.Id(eName).Op(name).Op("=").Lit(oneOf.Enum[0]))
+			for k, prop := range oneOf.Properties {
+				camelKey := strcase.ToCamel(k)
+				propName := name + "_" + camelKey
 
-		if i == len(schema.OneOf)-1 {
-			f.Comment(schema.Description)
-			f.Type().Id(name).String()
-			f.Const().Defs(sEnum...)
-			return nil
+				// Assert Enum implementation
+				f.Var().Id("_").Op(name).Op("=").Params(
+					jen.Op("*").Op(propName),
+				).Params(jen.Nil())
+
+				if prop.Ref != nil {
+					if !strings.HasPrefix(*prop.Ref, defPrefix) {
+						panic(fmt.Errorf("unknown reference %s", *prop.Ref))
+					}
+					refType := strings.TrimPrefix(*prop.Ref, defPrefix)
+
+					f.Comment(prop.Description)
+					f.Type().Id(propName).Struct(
+						jen.Id(camelKey).Op(refType).Tag(map[string]string{"json": k + ",omitempty"}),
+					)
+				} else {
+					generateDefinitionType(f, propName, prop)
+				}
+
+				f.Func().Params(
+					jen.Op("*").Id(propName),
+				).Id(funcName).Params().Block()
+			}
 		}
 	}
+
 	// TODO: implement
 
 	return nil

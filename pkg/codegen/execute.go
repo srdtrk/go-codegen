@@ -18,7 +18,9 @@ func GenerateExecuteMsg(f *jen.File, schema *schemas.JSONSchema) {
 		GenerateFieldsFromOneOf(schema.OneOf, schema.Title+"_")...,
 	)
 
-	GenerateDefinitions(f, schema.Definitions)
+	for name, def := range schema.Definitions {
+		RegisterDefinition(name, def)
+	}
 }
 
 func validateAsExecuteMsg(schema *schemas.JSONSchema) error {
