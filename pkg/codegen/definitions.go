@@ -48,18 +48,19 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 
 	switch {
 	case len(schema.Type) == 1:
-		err := generateDefinitionType(f, name, schema)
-		if err != nil {
+		if err := generateDefinitionType(f, name, schema); err != nil {
 			panic(err)
 		}
 	case schema.OneOf != nil:
-		err := generateDefinitionOneOf(f, name, schema)
-		if err != nil {
+		if err := generateDefinitionOneOf(f, name, schema); err != nil {
 			panic(err)
 		}
 	case len(schema.AllOf) == 1:
-		err := generateDefinitionAllOf(f, name, schema)
-		if err != nil {
+		if err := generateDefinitionAllOf(f, name, schema); err != nil {
+			panic(err)
+		}
+	case schema.Ref != nil:
+		if err := generateDefinitionRef(f, name, schema); err != nil {
 			panic(err)
 		}
 	default:
@@ -155,9 +156,20 @@ func generateDefinitionAllOf(f *jen.File, name string, schema *schemas.JSONSchem
 	return nil
 }
 
+func generateDefinitionRef(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	if !strings.HasPrefix(*schema.Ref, defPrefix) {
+		return fmt.Errorf("ref %s is not a definition", *schema.Ref)
+	}
+
+	defTypeName := strings.TrimPrefix(*schema.Ref, defPrefix)
+	f.Type().Id(name).Op(defTypeName)
+
+	return nil
+}
+
 // validateAsDefinition validates if the schema is a valid definition.
 func validateAsDefinition(name string, schema *schemas.JSONSchema) error {
-	if len(schema.Type) != 1 && schema.OneOf == nil && len(schema.AllOf) != 1 {
+	if len(schema.Type) != 1 && schema.OneOf == nil && len(schema.AllOf) != 1 && schema.Ref == nil {
 		return fmt.Errorf("definition %s is unsupported", name)
 	}
 

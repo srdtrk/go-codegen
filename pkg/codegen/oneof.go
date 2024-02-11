@@ -4,9 +4,12 @@ import (
 	"fmt"
 
 	"github.com/dave/jennifer/jen"
+	"github.com/iancoleman/strcase"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
+
+var enumPropertyDefinitions = map[string]*schemas.JSONSchema{}
 
 func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
 	ptrFalse := false
@@ -18,8 +21,11 @@ func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 				panic(fmt.Errorf("cannot determine the name of the field %v", schema))
 			}
 
-			for k := range schema.Properties {
+			for k, prop := range schema.Properties {
 				name = k
+
+				typeName := typePrefix + strcase.ToCamel(k)
+				enumPropertyDefinitions[typeName] = prop
 			}
 		}
 		// add comment
