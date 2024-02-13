@@ -29,6 +29,13 @@ func (s *MySuite) SetupSuite() {
 	s.logger = &logger
 
 	s.goCodegenDir = "../build/go-codegen"
+
+	// Clean up
+	s.T().Cleanup(func() {
+		// nolint:gosec
+		_, err := exec.Command("rm", "-rf", "output.go").Output()
+		s.Require().NoError(err)
+	})
 }
 
 func (s *MySuite) GenerateGoCode(schemaDir string) {
