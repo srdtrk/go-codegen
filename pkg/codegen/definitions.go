@@ -67,7 +67,7 @@ func RegisterDefinitions(definitions map[string]*schemas.JSONSchema) bool {
 func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 	// check if the ref is already registered
 	if regSchema, ok := globalDefRegistry[ref]; ok {
-		if regSchema.Title != schema.Title || regSchema.Description != schema.Description {
+		if !slices.Contains([]string{ref, schema.Title}, regSchema.Title) || regSchema.Description != schema.Description {
 			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations", ref))
 		}
 
