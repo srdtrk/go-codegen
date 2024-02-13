@@ -22,6 +22,7 @@ func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string) 
 	GenerateExecuteMsg(f, idlSchema.Execute)
 	GenerateSudoMsg(f, idlSchema.Sudo)
 	GenerateMigrateMsg(f, idlSchema.Migrate)
+	GenerateQueryMsg(f, idlSchema.Query)
 
 	generateDefinitions(f)
 

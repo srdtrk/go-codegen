@@ -19,6 +19,11 @@ func GenerateSudoMsg(f *jen.File, schema *schemas.JSONSchema) {
 	generateEnumMsg(f, schema, []string{"SudoMsg", "SudoMsg_for_Empty"})
 }
 
+// Generates the code for QueryMsg
+func GenerateQueryMsg(f *jen.File, schema *schemas.JSONSchema) {
+	generateEnumMsg(f, schema, []string{"QueryMsg", "QueryMsg_for_Empty"})
+}
+
 func generateEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitles []string) {
 	if schema == nil {
 		return
