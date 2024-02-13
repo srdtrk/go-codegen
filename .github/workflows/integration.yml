@@ -1,0 +1,44 @@
+name: integration
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - '**.go'
+permissions:
+  contents: read
+jobs:
+  golangci:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - uses: actions/checkout@v4
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.7.0
+        with:
+          version: v1.54
+          args: --timeout 5m
+          working-directory: integration_test
+  build:
+    name: build go-codegen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - uses: actions/checkout@v4
+      - name: Build
+        run: make build
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - uses: actions/checkout@v4
+      - name: Test
+        run: make integration-tests
