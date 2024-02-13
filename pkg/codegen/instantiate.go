@@ -9,7 +9,19 @@ import (
 )
 
 func GenerateInstantiateMsg(f *jen.File, schema *schemas.JSONSchema) {
-	if err := validateAsInstantiateMsg(schema); err != nil {
+	generateStructMsg(f, schema, "InstantiateMsg")
+}
+
+func GenerateMigrateMsg(f *jen.File, schema *schemas.JSONSchema) {
+	generateStructMsg(f, schema, "MigrateMsg")
+}
+
+func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle string) {
+	if schema == nil {
+		return
+	}
+
+	if err := validateAsStructMsg(schema, allowedTitle); err != nil {
 		panic(err)
 	}
 
@@ -23,8 +35,8 @@ func GenerateInstantiateMsg(f *jen.File, schema *schemas.JSONSchema) {
 	}
 }
 
-func validateAsInstantiateMsg(schema *schemas.JSONSchema) error {
-	if schema.Title != "InstantiateMsg" {
+func validateAsStructMsg(schema *schemas.JSONSchema, allowedTitle string) error {
+	if schema.Title != allowedTitle {
 		return fmt.Errorf("title must be InstantiateMsg")
 	}
 	if schema.Type[0] != "object" {
