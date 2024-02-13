@@ -9,8 +9,8 @@ on:
 permissions:
   contents: read
 jobs:
-  golangci:
-    name: golangci-lint
+  test:
+    name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v4
@@ -23,14 +23,6 @@ jobs:
           version: v1.54
           args: --timeout 5m
           working-directory: integration_test
-  build:
-    name: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-go@v4
-        with:
-          go-version: "1.21"
-      - uses: actions/checkout@v4
       - name: Build
         run: make build
       - name: Test
