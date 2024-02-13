@@ -16,3 +16,11 @@ unit-test:
 	@echo "Running unit tests..."
 	@go test -v -mod=readonly ./...
 	@echo "Unit tests complete!"
+
+.PHONY: integration-tests
+
+integration-tests:
+	@echo "Running integration tests..."
+	@cd integration_test
+	@go test -v -mod=readonly -tags=integration ./...
+	@echo "Integration tests complete!"
