@@ -23,12 +23,13 @@ func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 				name = k
 
 				typeName := typePrefix + strcase.ToCamel(k)
+
 				RegisterDefinition(typeName, prop)
 			}
 		}
-		for name, def := range schema.Definitions {
-			RegisterDefinition(name, def)
-		}
+
+		RegisterDefinitions(schema.Definitions)
+
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field

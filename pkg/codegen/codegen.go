@@ -4,6 +4,7 @@ import (
 	"github.com/dave/jennifer/jen"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string) error {
@@ -25,6 +26,7 @@ func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string) 
 	GenerateQueryMsg(f, idlSchema.Query)
 	GenerateResponses(f, idlSchema.Responses)
 
+	types.DefaultLogger().Info().Msgf("Generating code to %s", outputPath)
 	generateDefinitions(f)
 
 	if err := f.Save(outputPath); err != nil {

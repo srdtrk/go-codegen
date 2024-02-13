@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/dave/jennifer/jen"
@@ -12,11 +13,37 @@ import (
 
 const defPrefix = "#/definitions/"
 
-var globalDefRegistry = map[string]*schemas.JSONSchema{}
+var (
+	globalDefRegistry = map[string]*schemas.JSONSchema{}
+	generatingDefs    = false
+
+	changesMap = map[string]*schemas.JSONSchema{}
+)
 
 func generateDefinitions(f *jen.File) {
+	generatingDefs = true
 	for name, schema := range globalDefRegistry {
 		generateDefinition(f, name, schema)
+	}
+	generatingDefs = false
+
+	changesOccured := len(changesMap) != 0
+	for changesOccured {
+		tempMap := make(map[string]*schemas.JSONSchema)
+		for k, v := range changesMap {
+			tempMap[k] = v
+			RegisterDefinition(k, v)
+		}
+		// clear changesMap
+		changesMap = map[string]*schemas.JSONSchema{}
+
+		generatingDefs = true
+		for k, v := range tempMap {
+			generateDefinition(f, k, v)
+		}
+		generatingDefs = false
+
+		changesOccured = len(changesMap) != 0
 	}
 }
 
@@ -46,6 +73,11 @@ func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 		return false
 	}
 
+	if generatingDefs {
+		changesMap[ref] = schema
+		return true
+	}
+
 	globalDefRegistry[ref] = schema
 	return true
 }
@@ -71,7 +103,7 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 		if err := generateDefinitionType(f, name, schema); err != nil {
 			panic(err)
 		}
-	case schema.OneOf != nil:
+	case len(schema.OneOf) != 0:
 		if err := generateDefinitionOneOf(f, name, schema); err != nil {
 			panic(err)
 		}
@@ -122,6 +154,19 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 }
 
 func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	// Check if all oneOf types are the same
+	if len(schema.OneOf[0].Type) != 1 {
+		return fmt.Errorf("type of the enum variant %s is not supported", name)
+	}
+
+	areSame := !slices.ContainsFunc(schema.OneOf, func(s *schemas.JSONSchema) bool {
+		return len(s.Type) != 1 || s.Type[0] != schema.OneOf[0].Type[0]
+	})
+
+	if areSame {
+		return generateDefinitionOneOfAllSame(f, name, schema)
+	}
+
 	funcName := "Implements_" + name
 	f.Comment(schema.Description)
 	f.Type().Id(name).Interface(jen.Id(funcName).Params())
@@ -195,6 +240,17 @@ func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchem
 	return nil
 }
 
+func generateDefinitionOneOfAllSame(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	switch schema.OneOf[0].Type[0] {
+	case schemas.TypeNameObject:
+		f.Comment(schema.Description)
+		f.Type().Id(name).Struct(
+			GenerateFieldsFromOneOf(schema.OneOf, name+"_")...,
+		)
+	}
+	return nil
+}
+
 // generateEnumString generates a string enum type.
 func generateEnumString(f *jen.File, name string, enum []string) error {
 	constants := make([]jen.Code, len(enum))
@@ -238,7 +294,7 @@ func generateDefinitionRef(f *jen.File, name string, schema *schemas.JSONSchema)
 
 // validateAsDefinition validates if the schema is a valid definition.
 func validateAsDefinition(name string, schema *schemas.JSONSchema) error {
-	if len(schema.Type) != 1 && schema.OneOf == nil && len(schema.AllOf) != 1 && schema.Ref == nil {
+	if len(schema.Type) != 1 && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil {
 		return fmt.Errorf("definition %s is unsupported", name)
 	}
 
