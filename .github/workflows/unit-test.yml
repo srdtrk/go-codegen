@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '**.go'
+      - '.github/workflows/unit-test.yml'
 permissions:
   contents: read
 jobs:

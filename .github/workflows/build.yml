@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '**.go'
+      - '.github/workflows/build.yml'
 permissions:
   contents: read
 jobs:
