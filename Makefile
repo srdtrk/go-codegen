@@ -21,6 +21,5 @@ unit-test:
 
 integration-tests:
 	@echo "Running integration tests..."
-	@cd integration_test
-	@go test -v -mod=readonly -tags=integration ./...
+	@cd integration_test && go test -v -mod=readonly -tags=integration ./...
 	@echo "Integration tests complete!"
