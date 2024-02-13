@@ -9,6 +9,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 const defPrefix = "#/definitions/"
@@ -247,6 +248,24 @@ func generateDefinitionOneOfAllSame(f *jen.File, name string, schema *schemas.JS
 		f.Type().Id(name).Struct(
 			GenerateFieldsFromOneOf(schema.OneOf, name+"_")...,
 		)
+	case schemas.TypeNameString:
+		f.Comment(schema.Description)
+		f.Type().Id(name).String()
+
+		constants := []jen.Code{}
+		for _, oneOf := range schema.OneOf {
+			if len(oneOf.Enum) != 1 {
+				panic(fmt.Errorf("unsupported string enum %s", name))
+			}
+
+			constName := name + "_" + strcase.ToCamel(oneOf.Enum[0]) + "_Value"
+			constants = append(constants, jen.Comment(oneOf.Description))
+			constants = append(constants, jen.Id(constName).Op(name).Op("=").Lit(oneOf.Enum[0]))
+		}
+
+		f.Const().Defs(constants...)
+	default:
+		types.DefaultLogger().Error().Msgf("unsupported oneOf type %s for definition %s, please create an issue in 'https://github.com/srdtrk/go-codegen'", schema.OneOf[0].Type[0], name)
 	}
 	return nil
 }
