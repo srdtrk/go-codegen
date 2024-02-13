@@ -20,6 +20,19 @@ func generateDefinitions(f *jen.File) {
 	}
 }
 
+// RegisterDefinitions registers definitions to the global definition registry.
+func RegisterDefinitions(definitions map[string]*schemas.JSONSchema) bool {
+	allSuccessful := true
+	for name, schema := range definitions {
+		res := RegisterDefinition(name, schema)
+		if !res {
+			allSuccessful = false
+		}
+	}
+
+	return allSuccessful
+}
+
 // RegisterDefinition registers a definition to the global definition registry
 // and returns true if the definition is successfully registered.
 // If the definition is already registered, it returns false.
@@ -27,7 +40,7 @@ func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 	// check if the ref is already registered
 	if regSchema, ok := globalDefRegistry[ref]; ok {
 		if regSchema.Title != schema.Title || regSchema.Description != schema.Description {
-			panic(fmt.Sprintf("definition %s is already registered with a different schema", ref))
+			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations", ref))
 		}
 
 		return false
@@ -35,6 +48,17 @@ func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 
 	globalDefRegistry[ref] = schema
 	return true
+}
+
+// GetDefinition returns a definition from the global definition registry.
+// If the definition is not found, it returns false.
+func GetDefinition(ref string) (*schemas.JSONSchema, bool) {
+	schema, ok := globalDefRegistry[ref]
+	if !ok {
+		return nil, false
+	}
+
+	return schema, true
 }
 
 func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
@@ -156,6 +180,7 @@ func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchem
 
 			f.Type().Id(variantName).String()
 
+			f.Comment(oneOf.Description)
 			constName := variantName + "_Value"
 			f.Const().Id(constName).Op(variantName).Op("=").Lit(oneOf.Enum[0])
 

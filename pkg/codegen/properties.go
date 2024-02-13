@@ -11,9 +11,6 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
 
-func GeneratePropertiesAsDefinitions(f *jen.File, props map[string]*schemas.JSONSchema, typePrefix string) {
-}
-
 func GenerateFieldsFromProperties(props map[string]*schemas.JSONSchema) []jen.Code {
 	fields := []jen.Code{}
 	for name, schema := range props {

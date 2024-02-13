@@ -30,9 +30,7 @@ func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle str
 		GenerateFieldsFromProperties(schema.Properties)...,
 	)
 
-	for name, def := range schema.Definitions {
-		RegisterDefinition(name, def)
-	}
+	RegisterDefinitions(schema.Definitions)
 }
 
 func validateAsStructMsg(schema *schemas.JSONSchema, allowedTitle string) error {

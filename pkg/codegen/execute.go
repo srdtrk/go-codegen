@@ -7,28 +7,40 @@ import (
 	"github.com/dave/jennifer/jen"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 // Generates the code for ExecuteMsg
 func GenerateExecuteMsg(f *jen.File, schema *schemas.JSONSchema) {
+	if schema == nil {
+		types.DefaultLogger().Info().Msg("No ExecuteMsg found.")
+		return
+	}
+
 	generateEnumMsg(f, schema, []string{"ExecuteMsg", "ExecuteMsg_for_Empty"})
 }
 
 // Generates the code for SudoMsg
 func GenerateSudoMsg(f *jen.File, schema *schemas.JSONSchema) {
+	if schema == nil {
+		types.DefaultLogger().Info().Msg("No SudoMsg found.")
+		return
+	}
+
 	generateEnumMsg(f, schema, []string{"SudoMsg", "SudoMsg_for_Empty"})
 }
 
 // Generates the code for QueryMsg
 func GenerateQueryMsg(f *jen.File, schema *schemas.JSONSchema) {
+	if schema == nil {
+		types.DefaultLogger().Info().Msg("No QueryMsg found.")
+		return
+	}
+
 	generateEnumMsg(f, schema, []string{"QueryMsg", "QueryMsg_for_Empty"})
 }
 
 func generateEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitles []string) {
-	if schema == nil {
-		return
-	}
-
 	if err := validateAsEnumMsg(schema, allowedTitles); err != nil {
 		panic(err)
 	}
@@ -38,9 +50,7 @@ func generateEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitles []st
 		GenerateFieldsFromOneOf(schema.OneOf, schema.Title+"_")...,
 	)
 
-	for name, def := range schema.Definitions {
-		RegisterDefinition(name, def)
-	}
+	RegisterDefinitions(schema.Definitions)
 }
 
 func validateAsEnumMsg(schema *schemas.JSONSchema, allowedTitles []string) error {
