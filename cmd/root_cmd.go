@@ -7,6 +7,7 @@ import (
 
 	"github.com/srdtrk/go-codegen/pkg/codegen"
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 func RootCmd() *cobra.Command {
@@ -16,6 +17,7 @@ func RootCmd() *cobra.Command {
 	}
 
 	rootCmd.AddCommand(
+		versionCmd(),
 		generateCmd(),
 	)
 
@@ -58,6 +60,19 @@ func generateCmd() *cobra.Command {
 
 	cmd.Flags().StringP("output", "o", "output.go", "Path to the output file. If not provided, the output will be written to 'output.go'.")
 	cmd.Flags().String("package-name", "", "Name of the package to be used in the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
+
+	return cmd
+}
+
+func versionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "Print the version of go-codegen",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println(types.Version)
+			return nil
+		},
+	}
 
 	return cmd
 }
