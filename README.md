@@ -6,6 +6,14 @@ Generate Go code for your CosmWasm smart contracts.
   <img width="230" src="go-codegen.svg">
 </p>
 
+<div align="center">
+
+  [![E2E Status](https://github.com/srdtrk/go-codegen/actions/workflows/integration.yml/badge.svg?branch=main)](https://github.com/srdtrk/go-codegen/tree/main/integration_test)
+  [![Tag](https://img.shields.io/github/tag/srdtrk/go-codegen.svg)](https://github.com/srdtrk/go-codegen/releases/latest)
+  [![License: Apache-2.0](https://img.shields.io/github/license/srdtrk/go-codegen.svg)](https://github.com/srdtrk/go-codegen/blob/main/LICENSE)
+  [![Lines of Code](https://tokei.rs/b1/github/srdtrk/go-codegen)](https://github.com/srdtrk/go-codegen)
+</div>
+
 <!-- ``` -->
 <!-- installation script here -->
 <!-- ``` -->
