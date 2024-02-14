@@ -13,7 +13,7 @@ import (
 // Generates the code for ExecuteMsg
 func GenerateExecuteMsg(f *jen.File, schema *schemas.JSONSchema) {
 	if schema == nil {
-		types.DefaultLogger().Info().Msg("No ExecuteMsg found.")
+		types.DefaultLogger().Info().Msg("No ExecuteMsg found. Skipping...")
 		return
 	}
 
@@ -23,7 +23,7 @@ func GenerateExecuteMsg(f *jen.File, schema *schemas.JSONSchema) {
 // Generates the code for SudoMsg
 func GenerateSudoMsg(f *jen.File, schema *schemas.JSONSchema) {
 	if schema == nil {
-		types.DefaultLogger().Info().Msg("No SudoMsg found.")
+		types.DefaultLogger().Info().Msg("No SudoMsg found. Skipping...")
 		return
 	}
 
@@ -33,7 +33,7 @@ func GenerateSudoMsg(f *jen.File, schema *schemas.JSONSchema) {
 // Generates the code for QueryMsg
 func GenerateQueryMsg(f *jen.File, schema *schemas.JSONSchema) {
 	if schema == nil {
-		types.DefaultLogger().Info().Msg("No QueryMsg found.")
+		types.DefaultLogger().Info().Msg("No QueryMsg found. Skipping...")
 		return
 	}
 
@@ -41,6 +41,10 @@ func GenerateQueryMsg(f *jen.File, schema *schemas.JSONSchema) {
 }
 
 func generateEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitles []string) {
+	if schema == nil {
+		panic(fmt.Errorf("schema of %s is nil", schema.Title))
+	}
+
 	if err := validateAsEnumMsg(schema, allowedTitles); err != nil {
 		panic(err)
 	}

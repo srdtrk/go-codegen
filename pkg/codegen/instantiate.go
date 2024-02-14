@@ -6,19 +6,30 @@ import (
 	"github.com/dave/jennifer/jen"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 func GenerateInstantiateMsg(f *jen.File, schema *schemas.JSONSchema) {
+	if schema == nil {
+		types.DefaultLogger().Warn().Msg("No InstantiateMsg found. Skipping...")
+		return
+	}
+
 	generateStructMsg(f, schema, "InstantiateMsg")
 }
 
 func GenerateMigrateMsg(f *jen.File, schema *schemas.JSONSchema) {
+	if schema == nil {
+		types.DefaultLogger().Info().Msg("No MigrateMsg found. Skipping...")
+		return
+	}
+
 	generateStructMsg(f, schema, "MigrateMsg")
 }
 
 func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle string) {
 	if schema == nil {
-		return
+		panic(fmt.Errorf("schema of %s is nil", schema.Title))
 	}
 
 	if err := validateAsStructMsg(schema, allowedTitle); err != nil {
