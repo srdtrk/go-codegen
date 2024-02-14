@@ -40,9 +40,6 @@ func validateAsStructMsg(schema *schemas.JSONSchema, allowedTitle string) error 
 	if schema.Type[0] != "object" {
 		return fmt.Errorf("InstantiateMsg type must be object")
 	}
-	if schema.Properties == nil {
-		return fmt.Errorf("InstantiateMsg must have properties")
-	}
 
 	return nil
 }
