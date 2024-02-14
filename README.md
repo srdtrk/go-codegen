@@ -33,7 +33,6 @@ go-codegen generate /path/to/contract-api.json --output /path/to/output --packag
 
 This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `output.go` in the current directory.
 Package name is also optional, if not specified, it will use the name of the contract.
-<<<<<<< HEAD
 
 ## Acknowledgements
 
