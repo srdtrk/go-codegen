@@ -54,6 +54,7 @@ func (s *MySuite) GenerateGoCodeTestWithSchema(schemaDir string) {
 	s.Require().NoError(err)
 }
 
-func (s *MySuite) TestWithCwIcaController() {
+func (s *MySuite) TestMessageComposer() {
 	s.GenerateGoCodeTestWithSchema("testdata/cw-ica-controller.json")
+	s.GenerateGoCodeTestWithSchema("testdata/cw3-fixed-multisig.json")
 }
