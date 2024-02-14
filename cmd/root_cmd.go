@@ -35,9 +35,6 @@ func generateCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if outputFilePath == "" {
-				outputFilePath = "output.go"
-			}
 
 			idlSchema, err := schemas.IDLSchemaFromFile(args[0])
 			if err != nil {
@@ -54,7 +51,7 @@ func generateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String("output", "", "Path to the output file. If not provided, the output will be written to 'output.go'.")
+	cmd.Flags().StringP("output", "o", "output.go", "Path to the output file. If not provided, the output will be written to 'output.go'.")
 
 	return cmd
 }
