@@ -25,3 +25,8 @@ go-codegen generate /path/to/contract-api.json --output /path/to/output --packag
 
 This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `output.go` in the current directory.
 Package name is also optional, if not specified, it will use the name of the contract.
+
+## Acknowledgements
+
+The Go Gopher mascot was created by [Renee French](https://reneefrench.blogspot.com/) and is licensed under the [Creative Commons 4.0 Attribution License](https://creativecommons.org/licenses/by/4.0/).
+I've modified the original image to include the logo of [`ts-codegen`](https://github.com/CosmWasm/ts-codegen).
