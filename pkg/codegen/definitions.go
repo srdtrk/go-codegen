@@ -258,7 +258,7 @@ func generateDefinitionOneOfAllSame(f *jen.File, name string, schema *schemas.JS
 				panic(fmt.Errorf("unsupported string enum %s", name))
 			}
 
-			constName := name + "_" + strcase.ToCamel(oneOf.Enum[0]) + "_Value"
+			constName := name + "_" + strcase.ToCamel(oneOf.Enum[0])
 			constants = append(constants, jen.Comment(oneOf.Description))
 			constants = append(constants, jen.Id(constName).Op(name).Op("=").Lit(oneOf.Enum[0]))
 		}
