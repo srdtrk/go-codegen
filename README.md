@@ -2,7 +2,9 @@
 
 Generate Go code for your CosmWasm smart contracts.
 
-<!-- Add svg and banners here -->
+<p align="center">
+  <img width="230" src="go-codegen.svg">
+</p>
 
 <!-- ``` -->
 <!-- installation script here -->
