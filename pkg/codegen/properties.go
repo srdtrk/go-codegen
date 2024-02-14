@@ -32,7 +32,15 @@ func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 	if err != nil {
 		panic(err)
 	}
-	return jen.Id(pascalName).Op(typeStr).Tag(map[string]string{"json": name + ",omitempty"})
+
+	tags := map[string]string{}
+	if strings.HasPrefix(typeStr, "*") {
+		tags["json"] = name + ",omitempty"
+	} else {
+		tags["json"] = name
+	}
+
+	return jen.Id(pascalName).Op(typeStr).Tag(tags)
 }
 
 func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) (string, error) {

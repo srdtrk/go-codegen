@@ -199,7 +199,7 @@ func generateDefinitionOneOf(f *jen.File, name string, schema *schemas.JSONSchem
 
 					f.Comment(prop.Description)
 					f.Type().Id(propName).Struct(
-						jen.Id(camelKey).Op(refType).Tag(map[string]string{"json": k + ",omitempty"}),
+						jen.Id(camelKey).Op(refType).Tag(map[string]string{"json": k}),
 					)
 				} else {
 					err := generateDefinitionType(f, propName, prop)
