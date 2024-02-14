@@ -14,9 +14,9 @@ Generate Go code for your CosmWasm smart contracts.
   [![Lines of Code](https://tokei.rs/b1/github/srdtrk/go-codegen)](https://github.com/srdtrk/go-codegen)
 </div>
 
-<!-- ``` -->
-<!-- installation script here -->
-<!-- ``` -->
+```
+go install github.com/srdtrk/go-codegen
+```
 
 The quickest way to generate Go code for your CosmWasm smart contracts. Currently, this tool only supports generating the types needed to interact
 with the smart contract. Support for a gRPC query client and a gRPC transaction client is planned.
