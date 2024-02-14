@@ -58,4 +58,5 @@ func (s *MySuite) TestMessageComposer() {
 	s.GenerateGoCodeTestWithSchema("testdata/cw-ica-controller.json")
 	s.GenerateGoCodeTestWithSchema("testdata/cw3-fixed-multisig.json")
 	s.GenerateGoCodeTestWithSchema("testdata/account-nft.json")
+	s.GenerateGoCodeTestWithSchema("testdata/cyberpunk.json")
 }
