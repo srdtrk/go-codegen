@@ -31,6 +31,11 @@ func generateCmd() *cobra.Command {
 				return fmt.Errorf("expected 1 argument, got %d", len(args))
 			}
 
+			packageName, err := cmd.Flags().GetString("package-name")
+			if err != nil {
+				return err
+			}
+
 			outputFilePath, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
@@ -41,7 +46,7 @@ func generateCmd() *cobra.Command {
 				return err
 			}
 
-			err = codegen.GenerateCodeFromIDLSchema(idlSchema, outputFilePath)
+			err = codegen.GenerateCodeFromIDLSchema(idlSchema, outputFilePath, packageName)
 			if err != nil {
 				return err
 			}
@@ -52,6 +57,7 @@ func generateCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringP("output", "o", "output.go", "Path to the output file. If not provided, the output will be written to 'output.go'.")
+	cmd.Flags().String("package-name", "", "Name of the package to be used in the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
 
 	return cmd
 }
