@@ -1,16 +1,17 @@
 package codegen
 
 import (
+	"bytes"
+	"fmt"
+	"os"
 	"regexp"
-	"strings"
 
 	"github.com/dave/jennifer/jen"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
-	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
-func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string, packageName string) error {
+func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, packageName string) (*jen.File, error) {
 	if idlSchema == nil {
 		panic("idlSchema is nil")
 	}
@@ -21,10 +22,6 @@ func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string, 
 		}
 
 		packageName = idlSchema.ContractName
-	}
-
-	if !strings.HasSuffix(outputPath, ".go") {
-		panic("output path must end with .go")
 	}
 
 	nonAlphabeticRegex := regexp.MustCompile(`[^a-zA-Z ]+`)
@@ -44,13 +41,30 @@ func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string, 
 	GenerateQueryMsg(f, idlSchema.Query)
 	GenerateResponses(f, idlSchema.Responses)
 
-	types.DefaultLogger().Info().Msgf("Generating code to %s", outputPath)
 	generateDefinitions(f)
 
-	if err := f.Save(outputPath); err != nil {
+	return f, nil
+}
+
+func ValidateOutputFile(jenFile *jen.File, outputFilePath string) error {
+	fileContents, err := os.ReadFile(outputFilePath)
+	if err != nil {
 		return err
 	}
 
-	types.DefaultLogger().Info().Msgf("✨ All done! ✨")
+	buffer := &bytes.Buffer{}
+	if err := jenFile.Render(buffer); err != nil {
+		return err
+	}
+
+	fmt.Println(len(string(fileContents)), len(buffer.String()))
+
+	fmt.Println("File Contents:", string(fileContents))
+	fmt.Println("Buffer Contents:", buffer.String())
+
+	if string(fileContents) != buffer.String() {
+		return fmt.Errorf("output file is not up-to-date")
+	}
+
 	return nil
 }

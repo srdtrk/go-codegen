@@ -42,7 +42,7 @@ func GenerateQueryMsg(f *jen.File, schema *schemas.JSONSchema) {
 
 func generateEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitles []string) {
 	if schema == nil {
-		panic(fmt.Errorf("schema of %s is nil", schema.Title))
+		panic(fmt.Errorf("schema for %s are nil", allowedTitles))
 	}
 
 	if err := validateAsEnumMsg(schema, allowedTitles); err != nil {
