@@ -18,16 +18,30 @@ func RootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(
 		versionCmd(),
-		generateCmd(),
+		genMessagesCmd(),
+		genInterchaintest(),
 	)
 
 	return rootCmd
 }
 
-func generateCmd() *cobra.Command {
+func versionCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "generate [schema_file]",
-		Short: "Generate Golang code from a JSON schema file.",
+		Use:   "version",
+		Short: "Print the version of go-codegen",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println(types.Version)
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func genMessagesCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "messages schema_file [flags]",
+		Short: "Generate the Golang types for a CosmWasm contract from a JSON schema file.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return fmt.Errorf("expected 1 argument, got %d", len(args))
@@ -53,7 +67,6 @@ func generateCmd() *cobra.Command {
 				return err
 			}
 
-			// TODO: Implement the code generation logic here.
 			return nil
 		},
 	}
@@ -64,15 +77,33 @@ func generateCmd() *cobra.Command {
 	return cmd
 }
 
-func versionCmd() *cobra.Command {
+func genInterchaintest() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "version",
-		Short: "Print the version of go-codegen",
+		Use:   "interchaintest",
+		Short: "Scaffold an end-to-end test suite for CosmWasm contracts. Ideal for testing IBC functionality.",
+		Long: "Scaffold an end-to-end test suite for CosmWasm contracts using strangelove's interchaintest library. Currently supports v8 of the interchaintest library, which corresponds to wasmd v0.50.0",
+	}
+
+	cmd.AddCommand(
+		interchaintestScaffold(),
+	)
+
+	return cmd
+}
+
+func interchaintestScaffold() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "scaffold",
+		Short: "Scaffold an end-to-end test suite with any number of chains. Safe to use without any flags.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println(types.Version)
 			return nil
 		},
 	}
+
+	cmd.Flags().String("dir", "e2e/interchaintestv8", "Directory to scaffold the test suite in, relative to the current working directory.")
+	cmd.Flags().Uint8("chains", 2, "Number of chains to scaffold the test suite for.")
+	cmd.Flags().String("go-module", "github.com/srdtrk/go-codegen/e2esuite/v8", "Go module name to be used in the generated test suite.")
+	cmd.Flags().Bool("github-actions", false, "Generate a GitHub Actions workflow file for the test suite.")
 
 	return cmd
 }
