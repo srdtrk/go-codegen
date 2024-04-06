@@ -3,10 +3,12 @@ module github.com/srdtrk/go-codegen
 go 1.21.5
 
 require (
+	github.com/charmbracelet/huh v0.3.0
 	github.com/dave/jennifer v1.7.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
+	golang.org/x/mod v0.17.0
 )
 
 require (
@@ -15,7 +17,6 @@ require (
 	github.com/catppuccin/go v0.2.0 // indirect
 	github.com/charmbracelet/bubbles v0.17.2-0.20240108170749-ec883029c8e6 // indirect
 	github.com/charmbracelet/bubbletea v0.25.0 // indirect
-	github.com/charmbracelet/huh v0.3.0 // indirect
 	github.com/charmbracelet/lipgloss v0.9.1 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

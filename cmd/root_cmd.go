@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
+	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
+	"golang.org/x/mod/module"
 
 	"github.com/srdtrk/go-codegen/pkg/codegen"
 	"github.com/srdtrk/go-codegen/pkg/schemas"
@@ -81,7 +84,7 @@ func genInterchaintest() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "interchaintest",
 		Short: "Scaffold an end-to-end test suite for CosmWasm contracts. Ideal for testing IBC functionality.",
-		Long: "Scaffold an end-to-end test suite for CosmWasm contracts using strangelove's interchaintest library. Currently supports v8 of the interchaintest library, which corresponds to wasmd v0.50.0",
+		Long:  "Scaffold an end-to-end test suite for CosmWasm contracts using strangelove's interchaintest library. Currently supports v8 of the interchaintest library, which corresponds to wasmd v0.50.0",
 	}
 
 	cmd.AddCommand(
@@ -92,18 +95,86 @@ func genInterchaintest() *cobra.Command {
 }
 
 func interchaintestScaffold() *cobra.Command {
+	const (
+		defaultDir      = "e2e/interchaintestv8"
+		defaultGoModule = "github.com/srdtrk/go-codegen/e2esuite/v8"
+	)
+
 	cmd := &cobra.Command{
 		Use:   "scaffold",
 		Short: "Scaffold an end-to-end test suite with any number of chains. Safe to use without any flags.",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			var (
+				moduleName    string
+				outDir        string
+				chains        string
+				githubActions bool
+			)
+
+			form := huh.NewForm(
+				huh.NewGroup(
+					huh.NewInput().
+						Title("Go module name?").
+						Description("Enter the go module name to be used in the generated test suite.").
+						Value(&moduleName).
+						Placeholder(defaultGoModule).
+						Validate(func(s string) error {
+							if s == "" {
+								moduleName = defaultGoModule
+								return nil
+							}
+							return module.CheckPath(s)
+						}),
+
+					huh.NewInput().
+						Title("Output directory?").
+						Description("Enter the output directory to scaffold the testsuite in. Relative to the current working directory.").
+						Value(&outDir).
+						Placeholder(defaultDir).
+						Validate(func(s string) error {
+							if s == "" {
+								outDir = defaultDir
+								return nil
+							}
+							return module.CheckFilePath(s)
+						}),
+
+					huh.NewInput().
+						Title("Number of chains to scaffold?").
+						Value(&chains).
+						Placeholder("2").
+						Validate(func(s string) error {
+							if s == "" {
+								chains = "2"
+								return nil
+							}
+
+							num, err := strconv.ParseUint(s, 10, 8)
+							if err != nil {
+								return err
+							}
+							if num == 0 {
+								return fmt.Errorf("number of chains must be greater than 0")
+							}
+
+							return nil
+						}),
+
+					huh.NewConfirm().
+						Title("Would you like to generate github actions?").
+						Value(&githubActions),
+				),
+			)
+
+			err := form.Run()
+			if err != nil {
+				return err
+			}
+
+			// TODO: Generate code
 			return nil
 		},
 	}
-
-	cmd.Flags().String("dir", "e2e/interchaintestv8", "Directory to scaffold the test suite in, relative to the current working directory.")
-	cmd.Flags().Uint8("chains", 2, "Number of chains to scaffold the test suite for.")
-	cmd.Flags().String("go-module", "github.com/srdtrk/go-codegen/e2esuite/v8", "Go module name to be used in the generated test suite.")
-	cmd.Flags().Bool("github-actions", false, "Generate a GitHub Actions workflow file for the test suite.")
 
 	return cmd
 }
