@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/charmbracelet/huh v0.3.0
 	github.com/dave/jennifer v1.7.0
+	github.com/gobuffalo/genny/v2 v2.1.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
@@ -19,7 +20,6 @@ require (
 	github.com/charmbracelet/bubbletea v0.25.0 // indirect
 	github.com/charmbracelet/lipgloss v0.9.1 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
-	github.com/gobuffalo/genny/v2 v2.1.0 // indirect
 	github.com/gobuffalo/logger v1.0.7 // indirect
 	github.com/gobuffalo/packd v1.0.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
