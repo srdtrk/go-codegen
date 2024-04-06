@@ -6,9 +6,12 @@ import (
 	"io/fs"
 
 	"github.com/gobuffalo/genny/v2"
+	"github.com/gobuffalo/plush/v4"
+
+	"github.com/srdtrk/go-codegen/pkg/xgenny"
 )
 
-//go:embed files/*
+//go:embed files/* files/**/*
 var files embed.FS
 
 func NewGenerator() (*genny.Generator, error) {
@@ -20,10 +23,12 @@ func NewGenerator() (*genny.Generator, error) {
 
 	g := genny.New()
 
-	err = g.SelectiveFS(subfs, nil, nil, nil, nil)
+	err = g.FS(subfs)
 	if err != nil {
 		return nil, fmt.Errorf("generator selective fs: %w", err)
 	}
+
+	g.Transformer(xgenny.Transformer(plush.NewContext()))
 
 	return g, nil
 }

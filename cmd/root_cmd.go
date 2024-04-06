@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"path/filepath"
 	"strconv"
 
 	"github.com/charmbracelet/huh"
@@ -139,7 +141,12 @@ func interchaintestScaffold() *cobra.Command {
 								outDir = defaultDir
 								return nil
 							}
-							return module.CheckFilePath(s)
+
+							if !filepath.IsLocal(s) {
+								return errors.New("output directory must be a relative path")
+							}
+
+							return nil
 						}),
 
 					huh.NewInput().
@@ -158,7 +165,7 @@ func interchaintestScaffold() *cobra.Command {
 								return err
 							}
 							if num == 0 {
-								return fmt.Errorf("number of chains must be greater than 0")
+								return errors.New("number of chains must be greater than 0")
 							}
 
 							chainNum = uint8(num)

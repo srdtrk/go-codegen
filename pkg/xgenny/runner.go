@@ -2,6 +2,7 @@ package xgenny
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -84,12 +85,8 @@ func wetFileFn(runner *Runner, f genny.File) (genny.File, error) {
 		return d, nil
 	}
 
-	var err error
-	if !filepath.IsAbs(runner.Root) {
-		runner.Root, err = filepath.Abs(runner.Root)
-		if err != nil {
-			return f, err
-		}
+	if filepath.IsAbs(runner.Root) {
+		return nil, errors.New("root path must be relative")
 	}
 
 	name := f.Name()
