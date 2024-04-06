@@ -9,6 +9,7 @@ import (
 	"golang.org/x/mod/module"
 
 	"github.com/srdtrk/go-codegen/pkg/codegen"
+	"github.com/srdtrk/go-codegen/pkg/interchaintest"
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 	"github.com/srdtrk/go-codegen/pkg/types"
 )
@@ -109,6 +110,8 @@ func interchaintestScaffold() *cobra.Command {
 				outDir        string
 				chains        string
 				githubActions bool
+
+				chainNum uint8
 			)
 
 			form := huh.NewForm(
@@ -146,6 +149,7 @@ func interchaintestScaffold() *cobra.Command {
 						Validate(func(s string) error {
 							if s == "" {
 								chains = "2"
+								chainNum = 2
 								return nil
 							}
 
@@ -157,6 +161,7 @@ func interchaintestScaffold() *cobra.Command {
 								return fmt.Errorf("number of chains must be greater than 0")
 							}
 
+							chainNum = uint8(num)
 							return nil
 						}),
 
@@ -171,7 +176,11 @@ func interchaintestScaffold() *cobra.Command {
 				return err
 			}
 
-			// TODO: Generate code
+			err = interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
+			if err != nil {
+				return err
+			}
+
 			return nil
 		},
 	}

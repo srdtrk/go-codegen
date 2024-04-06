@@ -29,7 +29,7 @@ func GenerateMigrateMsg(f *jen.File, schema *schemas.JSONSchema) {
 
 func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle string) {
 	if schema == nil {
-		panic(fmt.Errorf("schema of %s is nil", schema.Title))
+		panic(fmt.Errorf("schema of %s is nil", allowedTitle))
 	}
 
 	if err := validateAsStructMsg(schema, allowedTitle); err != nil {
