@@ -15,12 +15,25 @@ func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions 
 		return err
 	}
 
-	// new runner
-	r := xgenny.NewRunner(ctx, outDir)
+	// create runners
+	globalRunner := xgenny.NewRunner(ctx, ".github/workflows")
+	testRunner := xgenny.NewRunner(ctx, outDir)
 
-	err = r.RunAndApply(generators...)
+	err = testRunner.RunAndApply(generators...)
 	if err != nil {
 		return err
+	}
+
+	if githubActions {
+		workflowGenerators, err := getWorkflowGenerators(outDir)
+		if err != nil {
+			return err
+		}
+
+		err = globalRunner.RunAndApply(workflowGenerators...)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -6,8 +6,24 @@ import (
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/chainconfig"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/e2esuite"
+	"github.com/srdtrk/go-codegen/templates/interchaintestv8/github"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/types"
 )
+
+func getWorkflowGenerators(outDir string) ([]*genny.Generator, error) {
+	var generators []*genny.Generator
+
+	// main generator
+	g, err := github.NewGenerator(&github.Options{
+		TestDir: outDir,
+	})
+	if err != nil {
+		return nil, err
+	}
+	generators = append(generators, g)
+
+	return generators, nil
+}
 
 func getInitGenerators(moduleName string, githubActions bool) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
