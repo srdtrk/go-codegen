@@ -109,7 +109,7 @@ func interchaintestScaffold() *cobra.Command {
 			var (
 				moduleName    string
 				outDir        string
-				chainNum      uint8
+				chainNum      uint8 = 2
 				githubActions bool
 			)
 
@@ -150,7 +150,9 @@ func interchaintestScaffold() *cobra.Command {
 						Title("Number of chains to scaffold?").
 						Value(&chainNum).
 						Options(
+							huh.NewOption[uint8]("1", 1),
 							huh.NewOption[uint8]("2", 2),
+							huh.NewOption[uint8]("3", 3),
 						),
 
 					huh.NewConfirm().

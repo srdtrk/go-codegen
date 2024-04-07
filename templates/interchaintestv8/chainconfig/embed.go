@@ -14,7 +14,11 @@ import (
 //go:embed files/* files/**/*
 var files embed.FS
 
-func NewGenerator() (*genny.Generator, error) {
+func NewGenerator(opts *Options) (*genny.Generator, error) {
+	if err := opts.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid options: %w", err)
+	}
+
 	// Remove "files/" prefix
 	subfs, err := fs.Sub(files, "files")
 	if err != nil {
@@ -28,7 +32,10 @@ func NewGenerator() (*genny.Generator, error) {
 		return nil, fmt.Errorf("generator selective fs: %w", err)
 	}
 
-	g.Transformer(xgenny.Transformer(plush.NewContext()))
+	ctx := plush.NewContext()
+	ctx.Set("Chains", getWasmdChains(opts.ChainNum))
+
+	g.Transformer(xgenny.Transformer(ctx))
 
 	return g, nil
 }

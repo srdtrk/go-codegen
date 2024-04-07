@@ -10,7 +10,7 @@ import (
 func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions bool) error {
 	ctx := context.Background()
 
-	generators, err := getInitGenerators(moduleName, githubActions)
+	generators, err := getInitGenerators(moduleName, chainNum, githubActions)
 	if err != nil {
 		return err
 	}

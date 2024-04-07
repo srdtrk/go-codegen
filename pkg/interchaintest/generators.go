@@ -25,7 +25,7 @@ func getWorkflowGenerators(outDir string) ([]*genny.Generator, error) {
 	return generators, nil
 }
 
-func getInitGenerators(moduleName string, githubActions bool) ([]*genny.Generator, error) {
+func getInitGenerators(moduleName string, chainNum uint8, githubActions bool) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
 
 	// main generator
@@ -48,7 +48,9 @@ func getInitGenerators(moduleName string, githubActions bool) ([]*genny.Generato
 	generators = append(generators, sg)
 
 	// chain config generator
-	cg, err := chainconfig.NewGenerator()
+	cg, err := chainconfig.NewGenerator(&chainconfig.Options{
+		ChainNum: chainNum,
+	})
 	if err != nil {
 		return nil, err
 	}
