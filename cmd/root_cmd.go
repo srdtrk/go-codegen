@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
@@ -110,10 +109,8 @@ func interchaintestScaffold() *cobra.Command {
 			var (
 				moduleName    string
 				outDir        string
-				chains        string
+				chainNum      uint8
 				githubActions bool
-
-				chainNum uint8
 			)
 
 			form := huh.NewForm(
@@ -149,28 +146,12 @@ func interchaintestScaffold() *cobra.Command {
 							return nil
 						}),
 
-					huh.NewInput().
+					huh.NewSelect[uint8]().
 						Title("Number of chains to scaffold?").
-						Value(&chains).
-						Placeholder("2").
-						Validate(func(s string) error {
-							if s == "" {
-								chains = "2"
-								chainNum = 2
-								return nil
-							}
-
-							num, err := strconv.ParseUint(s, 10, 8)
-							if err != nil {
-								return err
-							}
-							if num == 0 {
-								return errors.New("number of chains must be greater than 0")
-							}
-
-							chainNum = uint8(num)
-							return nil
-						}),
+						Value(&chainNum).
+						Options(
+							huh.NewOption[uint8]("2", 2),
+						),
 
 					huh.NewConfirm().
 						Title("Would you like to generate github actions?").

@@ -13,4 +13,8 @@ cd interchaintest/
 go test -v . -run TestWithBasicTestSuite -testify.m $TEST_NAME
 ```
 
-where `$TEST_NAME` is one of the test names of the `BasicTestSuite` in `basic_test.go`.
+where `$TEST_NAME` is one of the test names of the `BasicTestSuite` in `basic_test.go`. For example, to run the `TestBasic` test, you would run:
+
+```text
+go test -v . -run TestWithBasicTestSuite -testify.m TestBasic
+```

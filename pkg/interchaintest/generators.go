@@ -6,9 +6,10 @@ import (
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/chainconfig"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/e2esuite"
+	"github.com/srdtrk/go-codegen/templates/interchaintestv8/types"
 )
 
-func GetGenerators(moduleName string) ([]*genny.Generator, error) {
+func getInitGenerators(moduleName string) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
 
 	// main generator
@@ -35,6 +36,13 @@ func GetGenerators(moduleName string) ([]*genny.Generator, error) {
 		return nil, err
 	}
 	generators = append(generators, cg)
+
+	// types generator
+	tg, err := types.NewGenerator()
+	if err != nil {
+		return nil, err
+	}
+	generators = append(generators, tg)
 
 	return generators, nil
 }
