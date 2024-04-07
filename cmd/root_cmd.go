@@ -159,9 +159,22 @@ func interchaintestScaffold() *cobra.Command {
 				),
 			)
 
-			err := form.Run()
+			yes, err := cmd.Flags().GetBool("yes")
 			if err != nil {
 				return err
+			}
+
+			if yes {
+				moduleName = defaultGoModule
+				outDir = defaultDir
+				chainNum = 2
+				githubActions = false
+			} else {
+				err = form.Run()
+				if err != nil {
+					return err
+				}
+
 			}
 
 			err = interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
@@ -172,6 +185,8 @@ func interchaintestScaffold() *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().BoolP("yes", "y", false, "Skip the interactive form and use the default values.")
 
 	return cmd
 }

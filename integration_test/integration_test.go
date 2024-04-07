@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
@@ -29,19 +31,12 @@ func (s *MySuite) SetupSuite() {
 	s.logger = &logger
 
 	s.goCodegenDir = "../build/go-codegen"
-
-	// Clean up
-	s.T().Cleanup(func() {
-		// nolint:gosec
-		_, err := exec.Command("rm", "-rf", "output.go").Output()
-		s.Require().NoError(err)
-	})
 }
 
 func (s *MySuite) GenerateGoCode(schemaDir string) {
 	// Generate Go code
 	// nolint:gosec
-	_, err := exec.Command(s.goCodegenDir, "generate", schemaDir).Output()
+	_, err := exec.Command(s.goCodegenDir, "messages", schemaDir).Output()
 	s.Require().NoError(err)
 }
 
@@ -52,6 +47,11 @@ func (s *MySuite) GenerateGoCodeTestWithSchema(schemaDir string) {
 	// nolint:gosec
 	_, err := exec.Command("golangci-lint", "run", "output.go").Output()
 	s.Require().NoError(err)
+
+	defer func() {
+		_, err := exec.Command("rm", "-rf", "output.go").Output()
+		s.Require().NoError(err)
+	}()
 }
 
 func (s *MySuite) TestMessageComposer() {
@@ -60,4 +60,42 @@ func (s *MySuite) TestMessageComposer() {
 	s.GenerateGoCodeTestWithSchema("testdata/account-nft.json")
 	s.GenerateGoCodeTestWithSchema("testdata/cyberpunk.json")
 	s.GenerateGoCodeTestWithSchema("testdata/hackatom.json")
+}
+
+func (s *MySuite) TestInterchaintestScaffold() {
+	_, err := exec.Command(s.goCodegenDir, "interchaintest", "scaffold", "-y").Output()
+	s.Require().NoError(err)
+
+	err = os.Chdir("e2e/interchaintestv8")
+	s.Require().NoError(err)
+
+	defer func() {
+		err = os.Chdir("../..")
+		s.Require().NoError(err)
+
+		_, err := exec.Command("rm", "-rf", "e2e").Output()
+		s.Require().NoError(err)
+	}()
+
+	_, err = exec.Command("golangci-lint", "run").Output()
+	s.Require().NoError(err)
+
+	basicCmd := exec.Command("go", "test", "-v", "-run", "TestWithBasicTestSuite" , "-testify.m", "TestBasic")
+
+	stdout, err := basicCmd.StdoutPipe()
+	s.Require().NoError(err)
+
+	err = basicCmd.Start()
+	s.Require().NoError(err)
+
+	// output command stdout
+	scanner := bufio.NewScanner(stdout)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+	    m := scanner.Text()
+	    fmt.Println(m)
+	}
+
+	err = basicCmd.Wait()
+	s.Require().NoError(err)
 }

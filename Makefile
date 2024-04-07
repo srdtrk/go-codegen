@@ -21,5 +21,6 @@ unit-test:
 
 integration-tests:
 	@echo "Running integration tests..."
-	@cd integration_test && go test -v -mod=readonly -tags=integration ./...
+	@cd integration_test && go test -v -mod=readonly -run=TestWithMySuite/TestMessageComposer
+	@cd integration_test && go test -v -mod=readonly -run=TestWithMySuite/TestInterchaintestScaffold
 	@echo "Integration tests complete!"
