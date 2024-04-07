@@ -14,6 +14,8 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/relayer"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+
+	"<%= ModulePath %>/chainconfig"
 )
 
 // TestSuite is a suite of tests that require two chains and a relayer
@@ -24,8 +26,6 @@ type TestSuite struct {
 	ChainB       *cosmos.CosmosChain
 	UserA        ibc.Wallet
 	UserB        ibc.Wallet
-	ChainAConnID string
-	ChainBConnID string
 	dockerClient *dockerclient.Client
 	Relayer      ibc.Relayer
 	network      string
@@ -35,9 +35,11 @@ type TestSuite struct {
 }
 
 // SetupSuite sets up the chains, relayer, user accounts, clients, and connections
-func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest.ChainSpec) {
+func (s *TestSuite) SetupSuite(ctx context.Context) {
+	chainSpecs := chainconfig.DefaultChainSpecs
+
 	if len(chainSpecs) != 2 {
-		panic("ContractTestSuite requires exactly 2 chain specs")
+		panic("TestSuite requires exactly 2 chain specs")
 	}
 
 	t := s.T()
@@ -117,7 +119,6 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	s.Require().Equal(2, len(connections))
 	wasmdConnection := connections[0]
 	s.Require().NotEqual("connection-localhost", wasmdConnection.ID)
-	s.ChainAConnID = wasmdConnection.ID
 
 	// Query for the newly created connection in simd
 	connections, err = s.Relayer.GetConnections(ctx, s.ExecRep, s.ChainB.Config().ChainID)
@@ -126,7 +127,6 @@ func (s *TestSuite) SetupSuite(ctx context.Context, chainSpecs []*interchaintest
 	s.Require().Equal(2, len(connections))
 	simdConnection := connections[0]
 	s.Require().NotEqual("connection-localhost", simdConnection.ID)
-	s.ChainBConnID = simdConnection.ID
 
 	// Start the relayer and set the cleanup function.
 	err = s.Relayer.StartRelayer(ctx, s.ExecRep, s.PathName)

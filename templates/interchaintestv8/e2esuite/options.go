@@ -1,4 +1,4 @@
-package chainconfig
+package e2esuite
 
 import "golang.org/x/mod/module"
 

@@ -21,16 +21,16 @@ func GetGenerators(moduleName string) ([]*genny.Generator, error) {
 	generators = append(generators, g)
 
 	// suite generator
-	sg, err := e2esuite.NewGenerator()
+	sg, err := e2esuite.NewGenerator(&e2esuite.Options{
+		ModulePath: moduleName,
+	})
 	if err != nil {
 		return nil, err
 	}
 	generators = append(generators, sg)
 
 	// chain config generator
-	cg, err := chainconfig.NewGenerator(&chainconfig.Options{
-		ModulePath: moduleName,
-	})
+	cg, err := chainconfig.NewGenerator()
 	if err != nil {
 		return nil, err
 	}

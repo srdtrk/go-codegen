@@ -1,0 +1,76 @@
+package main
+
+import (
+	"context"
+	"testing"
+
+	"github.com/stretchr/testify/suite"
+
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
+
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
+
+	"<%= ModulePath %>/e2esuite"
+)
+
+// BasicTestSuite is a suite of tests that wraps the TestSuite
+// and can provide additional functionality
+type BasicTestSuite struct {
+	e2esuite.TestSuite
+}
+
+// SetupSuite calls the underlying BasicTestSuite's SetupSuite method
+func (s *BasicTestSuite) SetupSuite(ctx context.Context) {
+	s.TestSuite.SetupSuite(ctx)
+}
+
+// TestWithBasicTestSuite is the boilerplate code that allows the test suite to be run
+func TestWithBasicTestSuite(t *testing.T) {
+	suite.Run(t, new(BasicTestSuite))
+}
+
+// TestBasic is an example test function that will be run by the test suite
+func (s *BasicTestSuite) TestBasic() {
+	ctx := context.Background()
+
+	s.SetupSuite(ctx)
+
+	wasmd1, wasmd2 := s.ChainA, s.ChainB
+
+	// Add your test code here. For example, create a transfer channel between ChainA and ChainB:
+	s.Run("CreateTransferChannel", func() {
+		err := s.Relayer.CreateChannel(ctx, s.ExecRep, s.PathName, ibc.DefaultChannelOpts())
+		s.Require().NoError(err)
+
+		// Wait for the channel to be created
+		err = testutil.WaitForBlocks(ctx, 5, s.ChainA, s.ChainB)
+		s.Require().NoError(err)
+	})
+
+	// Test if the handshake was successful
+	s.Run("VerifyTransferChannel", func() {
+		wasmd1Channels, err := s.Relayer.GetChannels(ctx, s.ExecRep, wasmd1.Config().ChainID)
+		s.Require().NoError(err)
+		s.Require().Equal(1, len(wasmd1Channels))
+
+		wasmd1Channel := wasmd1Channels[0]
+		s.Require().Equal(transfertypes.PortID, wasmd1Channel.PortID)
+		s.Require().Equal(transfertypes.PortID, wasmd1Channel.Counterparty.PortID)
+		s.Require().Equal(transfertypes.Version, wasmd1Channel.Version)
+		s.Require().Equal(channeltypes.OPEN.String(), wasmd1Channel.State)
+		s.Require().Equal(channeltypes.UNORDERED.String(), wasmd1Channel.Ordering)
+
+		wasmd2Channels, err := s.Relayer.GetChannels(ctx, s.ExecRep, wasmd2.Config().ChainID)
+		s.Require().NoError(err)
+		s.Require().Equal(1, len(wasmd2Channels))
+
+		wasmd2Channel := wasmd2Channels[0]
+		s.Require().Equal(transfertypes.PortID, wasmd2Channel.PortID)
+		s.Require().Equal(transfertypes.PortID, wasmd2Channel.Counterparty.PortID)
+		s.Require().Equal(transfertypes.Version, wasmd2Channel.Version)
+		s.Require().Equal(channeltypes.OPEN.String(), wasmd2Channel.State)
+		s.Require().Equal(channeltypes.UNORDERED.String(), wasmd2Channel.Ordering)
+	})
+}
