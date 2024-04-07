@@ -9,12 +9,13 @@ import (
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/types"
 )
 
-func getInitGenerators(moduleName string) ([]*genny.Generator, error) {
+func getInitGenerators(moduleName string, githubActions bool) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
 
 	// main generator
 	g, err := interchaintestv8.NewGenerator(&interchaintestv8.Options{
 		ModulePath: moduleName,
+		Github:     githubActions,
 	})
 	if err != nil {
 		return nil, err

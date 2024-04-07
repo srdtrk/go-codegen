@@ -27,7 +27,12 @@ func NewGenerator(opts *Options) (*genny.Generator, error) {
 
 	g := genny.New()
 
-	err = g.SelectiveFS(subfs, nil, nil, nil, nil)
+	var exclude []string
+	if !opts.Github {
+		exclude = append(exclude, ".gitignore")
+	}
+
+	err = g.SelectiveFS(subfs, nil, nil, exclude, nil)
 	if err != nil {
 		return nil, fmt.Errorf("generator selective fs: %w", err)
 	}
