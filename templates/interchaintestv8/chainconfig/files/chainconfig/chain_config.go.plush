@@ -5,6 +5,5 @@ import (
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 )
 
-var DefaultChainSpecs = []*interchaintest.ChainSpec{
-<%= raw(Chains) %>
+var DefaultChainSpecs = []*interchaintest.ChainSpec{<%= raw(Chains) %>
 }

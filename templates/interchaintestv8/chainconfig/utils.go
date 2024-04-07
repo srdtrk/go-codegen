@@ -5,11 +5,7 @@ import "fmt"
 func getWasmdChains(chainNum uint8) string {
 	var chains string
 	for i := uint8(1); i <= chainNum; i++ {
-		// add new line if not the first chain
-		if i > 1 {
-			chains += "\n"
-		}
-		chains += getNewWasmdConfig(fmt.Sprintf("%d", i))
+		chains += "\n" + getNewWasmdConfig(fmt.Sprintf("%d", i))
 	}
 	return chains
 }
