@@ -41,6 +41,7 @@ func getInitGenerators(moduleName string, chainNum uint8, githubActions bool) ([
 	// suite generator
 	sg, err := e2esuite.NewGenerator(&e2esuite.Options{
 		ModulePath: moduleName,
+		ChainNum:   chainNum,
 	})
 	if err != nil {
 		return nil, err

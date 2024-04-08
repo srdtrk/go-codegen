@@ -4,6 +4,7 @@ import "golang.org/x/mod/module"
 
 type Options struct {
 	ModulePath string
+	ChainNum   uint8
 }
 
 // Validate that options are usable.

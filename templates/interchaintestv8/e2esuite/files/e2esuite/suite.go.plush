@@ -7,39 +7,48 @@ import (
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
-
+<%= if (ChainNum > 1) { %>
 	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
 	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
 	"github.com/strangelove-ventures/interchaintest/v8/relayer"
 	"github.com/strangelove-ventures/interchaintest/v8/testreporter"
 	"github.com/strangelove-ventures/interchaintest/v8/testutil"
-
+<% } else { %>
+	interchaintest "github.com/strangelove-ventures/interchaintest/v8"
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+<% } %>
 	"<%= ModulePath %>/chainconfig"
 )
 
 // TestSuite is a suite of tests that require two chains and a relayer
 type TestSuite struct {
 	suite.Suite
-
-	ChainA       *cosmos.CosmosChain
-	ChainB       *cosmos.CosmosChain
-	UserA        ibc.Wallet
-	UserB        ibc.Wallet
-	dockerClient *dockerclient.Client
+<%= if (ChainNum > 1) { %>
+	<%= for (n) in between(0, ChainNum) { %>Chain<%= numToLetter(n) %>       *cosmos.CosmosChain
+	<% } %><%= for (n) in between(0, ChainNum) { %>User<%= numToLetter(n) %>        ibc.Wallet
+	<% } %>dockerClient *dockerclient.Client
 	Relayer      ibc.Relayer
 	network      string
 	logger       *zap.Logger
 	ExecRep      *testreporter.RelayerExecReporter
-	PathName     string
-}
+	// Name of the path from ChainA to ChainB
+	PathName string
+<% } else { %>
+	ChainA       *cosmos.CosmosChain
+	UserA        ibc.Wallet
+	dockerClient *dockerclient.Client
+	network      string
+	logger       *zap.Logger
+<% } %>}
 
 // SetupSuite sets up the chains, relayer, user accounts, clients, and connections
 func (s *TestSuite) SetupSuite(ctx context.Context) {
 	chainSpecs := chainconfig.DefaultChainSpecs
 
-	if len(chainSpecs) != 2 {
-		panic("TestSuite requires exactly 2 chain specs")
+	if len(chainSpecs) != <%= ChainNum %> {
+		panic("TestSuite requires exactly <%= ChainNum %> chain specs")
 	}
 
 	t := s.T()
@@ -51,10 +60,9 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 
 	chains, err := cf.Chains(t.Name())
 	s.Require().NoError(err)
-	s.ChainA = chains[0].(*cosmos.CosmosChain)
-	s.ChainB = chains[1].(*cosmos.CosmosChain)
-
-	// docker run -it --rm --entrypoint echo ghcr.io/cosmos/relayer "$(id -u):$(id -g)"
+<%= for (n) in between(0, ChainNum) { %>	s.Chain<%= numToLetter(n) %> = chains[<%= n %>].(*cosmos.CosmosChain)
+<% } %>
+<%= if (ChainNum > 1) { %>	// docker run -it --rm --entrypoint echo ghcr.io/cosmos/relayer "$(id -u):$(id -g)"
 	goRelayerImage := relayer.CustomDockerImage(goRelayerImage, goRelayerTag, goRelayerUidGid)
 
 	s.Relayer = interchaintest.NewBuiltinRelayerFactory(
@@ -66,34 +74,32 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 	s.ExecRep = testreporter.NewNopReporter().RelayerExecReporter(t)
 
 	s.PathName = s.ChainA.Config().Name + "-" + s.ChainB.Config().Name
-
 	ic := interchaintest.NewInterchain().
-		AddChain(s.ChainA).
-		AddChain(s.ChainB).
-		AddRelayer(s.Relayer, "relayer").
+		<%= for (n) in between(0, ChainNum) { %>AddChain(s.Chain<%= numToLetter(n) %>).
+		<% } %>AddRelayer(s.Relayer, "relayer").
 		AddLink(interchaintest.InterchainLink{
 			Chain1:  s.ChainA,
 			Chain2:  s.ChainB,
 			Relayer: s.Relayer,
 			Path:    s.PathName,
 		})
-
-	s.Require().NoError(ic.Build(ctx, s.ExecRep, interchaintest.InterchainBuildOptions{
+<% } else { %>	ic := interchaintest.NewInterchain().AddChain(s.ChainA)
+<% } %>
+	s.Require().NoError(ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
 		Client:           s.dockerClient,
 		NetworkID:        s.network,
 		SkipPathCreation: true,
 	}))
 
-	s.Require().NoError(populateQueryReqToPath(ctx, s.ChainA))
-	s.Require().NoError(populateQueryReqToPath(ctx, s.ChainB))
-
-	// Fund a user account on ChainA and ChainB
+	// map all query request types to their gRPC method paths
+<%= for (n) in between(0, ChainNum) { %>	s.Require().NoError(populateQueryReqToPath(ctx, s.Chain<%= numToLetter(n) %>))
+<% } %>
+	// Fund a user accounts
 	const userFunds = int64(10_000_000_000)
-	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds, s.ChainA, s.ChainB)
-	s.UserA = users[0]
-	s.UserB = users[1]
-
+	users := interchaintest.GetAndFundTestUsers(t, ctx, t.Name(), userFunds<%= for (n) in between(0, ChainNum) { return ", s.Chain" + numToLetter(n) } %>)
+<%= for (n) in between(0, ChainNum) { %>	s.User<%= numToLetter(n) %> = users[<%= n %>]
+<% } %><%= if (ChainNum > 1) { %>
 	// Generate a new IBC path
 	err = s.Relayer.GeneratePath(ctx, s.ExecRep, s.ChainA.Config().ChainID, s.ChainB.Config().ChainID, s.PathName)
 	s.Require().NoError(err)
@@ -140,8 +146,16 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 			}
 
 			// Collect diagnostics
-			chains := []string{chainSpecs[0].ChainConfig.Name, chainSpecs[1].ChainConfig.Name}
+			chains := []string{chainSpecs[0].ChainConfig.Name<%= for (n) in between(1, ChainNum) { return ", chainSpecs[" + n + "].ChainConfig.Name" } %>}
 			collect(t, s.dockerClient, true, chains...)
 		},
 	)
-}
+<% } else { %>
+	t.Cleanup(
+		func() {
+			// Collect diagnostics
+			chains := []string{chainSpecs[0].ChainConfig.Name}
+			collect(t, s.dockerClient, true, chains...)
+		},
+	)
+<% } %>}
