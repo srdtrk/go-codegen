@@ -11,7 +11,6 @@ import (
 
 	"github.com/srdtrk/go-codegen/pkg/codegen"
 	"github.com/srdtrk/go-codegen/pkg/interchaintest"
-	"github.com/srdtrk/go-codegen/pkg/schemas"
 	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
@@ -62,17 +61,7 @@ func genMessagesCmd() *cobra.Command {
 				return err
 			}
 
-			idlSchema, err := schemas.IDLSchemaFromFile(args[0])
-			if err != nil {
-				return err
-			}
-
-			err = codegen.GenerateCodeFromIDLSchema(idlSchema, outputFilePath, packageName)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return codegen.GenerateCodeFromIDLSchema(args[0], outputFilePath, packageName)
 		},
 	}
 
@@ -86,11 +75,12 @@ func genInterchaintest() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "interchaintest",
 		Short: "Scaffold an end-to-end test suite for CosmWasm contracts. Ideal for testing IBC functionality.",
-		Long:  "Scaffold an end-to-end test suite for CosmWasm contracts using strangelove's interchaintest library. Currently supports v8 of the interchaintest library, which corresponds to wasmd v0.50.0",
+		Long:  "Scaffold an end-to-end test suite for CosmWasm contracts using strangelove's interchaintest library.\nCurrently supports v8 of the interchaintest library, which corresponds to wasmd v0.50.0.",
 	}
 
 	cmd.AddCommand(
 		interchaintestScaffold(),
+		ictestAddContract(),
 	)
 
 	return cmd
@@ -189,6 +179,41 @@ func interchaintestScaffold() *cobra.Command {
 	}
 
 	cmd.Flags().BoolP("yes", "y", false, "Skip the interactive form and use the default values.")
+
+	return cmd
+}
+
+func ictestAddContract() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add-contract schema_file [flags]",
+		Short: "Add a contract to the interchaintest suite.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return fmt.Errorf("expected 1 argument, got %d", len(args))
+			}
+
+			suiteDir, err := cmd.Flags().GetString("suite-dir")
+			if err != nil {
+				return err
+			}
+
+			packageName, err := cmd.Flags().GetString("contract-name")
+			if err != nil {
+				return err
+			}
+
+			msgsOnly, err := cmd.Flags().GetBool("messages-only")
+			if err != nil {
+				return err
+			}
+
+			return interchaintest.AddContract(args[0], suiteDir, packageName, msgsOnly)
+		},
+	}
+
+	cmd.Flags().String("suite-dir", ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
+	cmd.Flags().String("contract-name", "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file. Recommend leaving this empty.")
+	cmd.Flags().Bool("messages-only", false, "If set, the contract will not be added to the test suite but its messages will be added.")
 
 	return cmd
 }

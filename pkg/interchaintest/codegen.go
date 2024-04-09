@@ -16,7 +16,7 @@ func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions 
 	}
 
 	// create runners
-	globalRunner := xgenny.NewRunner(ctx, ".github/workflows")
+	workflowsRunner := xgenny.NewRunner(ctx, ".github/workflows")
 	testRunner := xgenny.NewRunner(ctx, outDir)
 
 	err = testRunner.RunAndApply(generators...)
@@ -30,11 +30,15 @@ func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions 
 			return err
 		}
 
-		err = globalRunner.RunAndApply(workflowGenerators...)
+		err = workflowsRunner.RunAndApply(workflowGenerators...)
 		if err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error {
 	return nil
 }

@@ -10,9 +10,10 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
-func GenerateCodeFromIDLSchema(idlSchema *schemas.IDLSchema, outputPath string, packageName string) error {
-	if idlSchema == nil {
-		panic("idlSchema is nil")
+func GenerateCodeFromIDLSchema(schemaPath, outputPath string, packageName string) error {
+	idlSchema, err := schemas.IDLSchemaFromFile(schemaPath)
+	if err != nil {
+		return err
 	}
 
 	if packageName == "" {
