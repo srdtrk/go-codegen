@@ -27,18 +27,14 @@ func NewGenerator(opts *Options) (*genny.Generator, error) {
 
 	g := genny.New()
 
-	var exclude []string
-	if !opts.Github {
-		exclude = append(exclude, ".gitignore")
-	}
-
-	err = g.SelectiveFS(subfs, nil, nil, exclude, nil)
+	err = g.SelectiveFS(subfs, nil, nil, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("generator selective fs: %w", err)
 	}
 
 	ctx := plush.NewContext()
 	ctx.Set("ModulePath", opts.ModulePath)
+	ctx.Set("ChainNum", int(opts.ChainNum))
 
 	g.Transformer(xgenny.Transformer(ctx))
 

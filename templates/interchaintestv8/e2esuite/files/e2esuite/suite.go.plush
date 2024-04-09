@@ -83,15 +83,22 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 			Relayer: s.Relayer,
 			Path:    s.PathName,
 		})
-<% } else { %>	ic := interchaintest.NewInterchain().AddChain(s.ChainA)
-<% } %>
-	s.Require().NoError(ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
+
+	s.Require().NoError(ic.Build(ctx, s.ExecRep, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
 		Client:           s.dockerClient,
 		NetworkID:        s.network,
 		SkipPathCreation: true,
 	}))
 
+<% } else { %>	ic := interchaintest.NewInterchain().AddChain(s.ChainA)
+	s.Require().NoError(ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
+		TestName:         t.Name(),
+		Client:           s.dockerClient,
+		NetworkID:        s.network,
+		SkipPathCreation: true,
+	}))
+<% } %>
 	// map all query request types to their gRPC method paths
 <%= for (n) in between(0, ChainNum) { %>	s.Require().NoError(populateQueryReqToPath(ctx, s.Chain<%= numToLetter(n) %>))
 <% } %>
@@ -147,15 +154,7 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 
 			// Collect diagnostics
 			chains := []string{chainSpecs[0].ChainConfig.Name<%= for (n) in between(1, ChainNum) { return ", chainSpecs[" + n + "].ChainConfig.Name" } %>}
-			collect(t, s.dockerClient, true, chains...)
-		},
-	)
-<% } else { %>
-	t.Cleanup(
-		func() {
-			// Collect diagnostics
-			chains := []string{chainSpecs[0].ChainConfig.Name}
-			collect(t, s.dockerClient, true, chains...)
+			collect(t, s.dockerClient, false, chains...)
 		},
 	)
 <% } %>}

@@ -20,7 +20,7 @@ const (
 	testLabel = "ibc-test"
 
 	dockerInspectFileName = "docker-inspect.json"
-	e2eDir                = "e2e"
+	e2eDir                = "<%= TestDir %>"
 	defaultFilePerm       = 0o750
 )
 

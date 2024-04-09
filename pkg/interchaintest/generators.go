@@ -25,13 +25,14 @@ func getWorkflowGenerators(outDir string) ([]*genny.Generator, error) {
 	return generators, nil
 }
 
-func getInitGenerators(moduleName string, chainNum uint8, githubActions bool) ([]*genny.Generator, error) {
+func getInitGenerators(moduleName string, chainNum uint8, outDir string, githubActions bool) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
 
 	// main generator
 	g, err := interchaintestv8.NewGenerator(&interchaintestv8.Options{
 		ModulePath: moduleName,
 		Github:     githubActions,
+		ChainNum:   chainNum,
 	})
 	if err != nil {
 		return nil, err
@@ -42,6 +43,7 @@ func getInitGenerators(moduleName string, chainNum uint8, githubActions bool) ([
 	sg, err := e2esuite.NewGenerator(&e2esuite.Options{
 		ModulePath: moduleName,
 		ChainNum:   chainNum,
+		TestDir:    outDir,
 	})
 	if err != nil {
 		return nil, err

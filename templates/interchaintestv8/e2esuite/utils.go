@@ -8,6 +8,7 @@ func (opts *Options) plushContext() *plush.Context {
 	ctx := plush.NewContext()
 	ctx.Set("ModulePath", opts.ModulePath)
 	ctx.Set("ChainNum", int(opts.ChainNum))
+	ctx.Set("TestDir", opts.TestDir)
 	ctx.Set("between", betweenHelper)
 	ctx.Set("numToLetter", numToLetterHelper)
 	return ctx

@@ -29,7 +29,7 @@ func getNewWasmdConfig(id string) string {
 			Denom:          "stake",
 			GasPrices:      "0.00stake",
 			GasAdjustment:  1.3,
-			EncodingConfig: EncodingConfig(),
+			EncodingConfig: WasmEncodingConfig(),
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 		},
