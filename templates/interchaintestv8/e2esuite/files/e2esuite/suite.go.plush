@@ -157,4 +157,12 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 			collect(t, s.dockerClient, false, chains...)
 		},
 	)
+<% } else { %>
+	t.Cleanup(
+		func() {
+			// Collect diagnostics
+			chains := []string{chainSpecs[0].ChainConfig.Name}
+			collect(t, s.dockerClient, false, chains...)
+		},
+	)
 <% } %>}

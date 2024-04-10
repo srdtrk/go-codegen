@@ -28,7 +28,7 @@ func NewGenerator(opts *Options) (*genny.Generator, error) {
 
 	var exclude []string
 	if opts.ChainNum == 1 {
-		exclude = append(exclude, "e2esuite/constants.go", "e2esuite/diagnostics.go")
+		exclude = append(exclude, "e2esuite/constants.go")
 	}
 
 	err = g.SelectiveFS(subfs, nil, nil, exclude, nil)
