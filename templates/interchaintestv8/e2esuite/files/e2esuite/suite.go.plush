@@ -90,7 +90,6 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 		NetworkID:        s.network,
 		SkipPathCreation: true,
 	}))
-
 <% } else { %>	ic := interchaintest.NewInterchain().AddChain(s.ChainA)
 	s.Require().NoError(ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
