@@ -2,6 +2,7 @@ package interchaintestv8
 
 import (
 	"errors"
+	"path/filepath"
 
 	"github.com/gobuffalo/plush/v4"
 	"golang.org/x/mod/module"
@@ -14,8 +15,8 @@ type Options struct {
 }
 
 type ContractTestOptions struct {
-	ModulePath          string
-	ContractPackageName string
+	ModulePath    string
+	RelPackageDir string
 }
 
 // Validate that Options is usable.
@@ -39,6 +40,10 @@ func (opts *ContractTestOptions) Validate() error {
 		return err
 	}
 
+	if !filepath.IsLocal(opts.RelPackageDir) {
+		return errors.New("RelPackageDir must be a local path")
+	}
+
 	return nil
 }
 
@@ -54,6 +59,6 @@ func (opts *Options) plushContext() *plush.Context {
 func (opts *ContractTestOptions) plushContext() *plush.Context {
 	ctx := plush.NewContext()
 	ctx.Set("ModulePath", opts.ModulePath)
-	ctx.Set("ContractPackageName", opts.ContractPackageName)
+	ctx.Set("RelPackageDir", opts.RelPackageDir)
 	return ctx
 }

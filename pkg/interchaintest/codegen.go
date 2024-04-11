@@ -122,9 +122,17 @@ func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error
 	}
 
 	if !foundContractTest {
+		types.DefaultLogger().Info().Msg("No contract test suite found. Generating...")
+
 		contractTestRunner := xgenny.NewRunner(ctx, suiteDir)
 
-		contractTestGenerators, err := getContractTestGenerators(packageName, goMod.Module.Mod.Path)
+		relContractsDir, err := filepath.Rel(suiteDir, contractsDir)
+		if err != nil {
+			return err
+		}
+
+		relPackageDir := filepath.Join(relContractsDir, packageName)
+		contractTestGenerators, err := getContractTestGenerators(relPackageDir, goMod.Module.Mod.Path)
 		if err != nil {
 			return err
 		}

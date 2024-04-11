@@ -27,7 +27,7 @@ func validateSuitePath(suitePath string) error {
 
 func findLine(targetDir, line string) (string, bool, error) {
 	var (
-		found bool
+		found   bool
 		resPath string
 	)
 	err := filepath.WalkDir(targetDir, func(path string, d fs.DirEntry, err error) error {

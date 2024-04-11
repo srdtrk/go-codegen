@@ -76,11 +76,11 @@ func getContractGenerators(idlSchema *schemas.IDLSchema, packageName, modulePath
 	// contract generator
 	cg, err := types.NewContractGenerator(&types.AddContractOptions{
 		InstantiateMsgName: idlSchema.Instantiate.Title,
-		ExecuteMsgName: idlSchema.Execute.Title,
-		QueryMsgName: idlSchema.Query.Title,
-		ContractName: idlSchema.ContractName,
-		PackageName: packageName,
-		ModulePath: modulePath,
+		ExecuteMsgName:     idlSchema.Execute.Title,
+		QueryMsgName:       idlSchema.Query.Title,
+		ContractName:       idlSchema.ContractName,
+		PackageName:        packageName,
+		ModulePath:         modulePath,
 	})
 	if err != nil {
 		return nil, err
@@ -90,13 +90,13 @@ func getContractGenerators(idlSchema *schemas.IDLSchema, packageName, modulePath
 	return generators, nil
 }
 
-func getContractTestGenerators(packageName, modulePath string) ([]*genny.Generator, error) {
+func getContractTestGenerators(relPackageDir, modulePath string) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
 
 	// contract test generator
 	ctg, err := interchaintestv8.NewGeneratorForContractTest(&interchaintestv8.ContractTestOptions{
-		ModulePath: modulePath,
-		ContractPackageName: packageName,
+		ModulePath:    modulePath,
+		RelPackageDir: relPackageDir,
 	})
 	if err != nil {
 		return nil, err

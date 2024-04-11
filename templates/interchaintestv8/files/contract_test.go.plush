@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"<%= ModulePath %>/e2esuite"
-	"<%= ModulePath %>/types/<%= ContractPackageName %>"
+	"<%= ModulePath %>/<%= RelPackageDir %>"
 )
 
 // ContactTestSuite is a suite of tests that wraps the TestSuite
