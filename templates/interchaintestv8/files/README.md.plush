@@ -10,11 +10,11 @@ To run the tests locally, run the following commands from this directory:
 
 ```text
 cd interchaintest/
-go test -v . -run TestWithBasicTestSuite -testify.m $TEST_NAME
+go test -v . -run=TestWithBasicTestSuite/$TEST_NAME
 ```
 
 where `$TEST_NAME` is one of the test names of the `BasicTestSuite` in `basic_test.go`. For example, to run the `TestBasic` test, you would run:
 
 ```text
-go test -v . -run TestWithBasicTestSuite -testify.m TestBasic
+go test -v . -run=TestWithBasicTestSuite/TestBasic
 ```

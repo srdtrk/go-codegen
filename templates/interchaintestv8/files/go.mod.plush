@@ -1,4 +1,4 @@
-module github.com/srdtrk/go-codegen/e2esuite/v8
+module <%= ModulePath %>
 
 go 1.21
 

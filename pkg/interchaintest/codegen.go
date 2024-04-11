@@ -11,13 +11,17 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/codegen"
 	gomodule "github.com/srdtrk/go-codegen/pkg/go/module"
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 	"github.com/srdtrk/go-codegen/pkg/xgenny"
+	"github.com/srdtrk/go-codegen/templates/interchaintestv8"
 	templatetypes "github.com/srdtrk/go-codegen/templates/interchaintestv8/types"
 )
 
 // GenerateTestSuite generates the interchaintest test suite
 func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions bool) error {
 	ctx := context.Background()
+
+	types.DefaultLogger().Info().Msgf("Generating test suite in %s", outDir)
 
 	generators, err := getInitGenerators(moduleName, chainNum, outDir, githubActions)
 	if err != nil {
@@ -55,11 +59,15 @@ func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions 
 		return err
 	}
 
+	types.DefaultLogger().Info().Msgf("✨ All done! ✨")
+
 	return nil
 }
 
 func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error {
 	ctx := context.Background()
+
+	types.DefaultLogger().Info().Msgf("Adding contract %s", contractName)
 
 	idlSchema, err := schemas.IDLSchemaFromFile(schemaPath)
 	if err != nil {
@@ -91,6 +99,11 @@ func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error
 		return fmt.Errorf("could not find placeholder '%s' in %s", templatetypes.PlaceholderContractDir, suiteDir)
 	}
 
+	_, foundContractTest, err := findLine(suiteDir, interchaintestv8.PlaceholderContractSuite)
+	if err != nil {
+		return err
+	}
+
 	nonAlphanumericRegex := regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
 	packageName := nonAlphanumericRegex.ReplaceAllString(contractName, "")
 	packageName = strings.ToLower(packageName)
@@ -103,7 +116,31 @@ func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error
 	contractsDir, _ := filepath.Split(contractDir)
 	contractRunner := xgenny.NewRunner(ctx, contractsDir)
 
-	err = contractRunner.RunAndApply(generators...)
+	err = contractRunner.Run(generators...)
+	if err != nil {
+		return err
+	}
+
+	if !foundContractTest {
+		contractTestRunner := xgenny.NewRunner(ctx, suiteDir)
+
+		contractTestGenerators, err := getContractTestGenerators(packageName, goMod.Module.Mod.Path)
+		if err != nil {
+			return err
+		}
+
+		err = contractTestRunner.Run(contractTestGenerators...)
+		if err != nil {
+			return err
+		}
+
+		err = contractTestRunner.ApplyModifications()
+		if err != nil {
+			return err
+		}
+	}
+
+	err = contractRunner.ApplyModifications()
 	if err != nil {
 		return err
 	}
