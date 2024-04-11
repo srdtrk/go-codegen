@@ -1,37 +1,21 @@
 package chainconfig
 
-import "fmt"
+import "github.com/gobuffalo/plush/v4"
 
-func getWasmdChains(chainNum uint8) string {
-	var chains string
-	for i := uint8(1); i <= chainNum; i++ {
-		chains += "\n" + getNewWasmdConfig(fmt.Sprintf("%d", i))
-	}
-	return chains
+type ranger struct {
+	pos int
+	end int
 }
 
-func getNewWasmdConfig(id string) string {
-	return fmt.Sprintf(`	// -- WASMD --
-	{
-		ChainConfig: ibc.ChainConfig{
-			Type:    "cosmos",
-			Name:    "wasmd-%s",
-			ChainID: "wasmd-%s",
-			Images: []ibc.DockerImage{
-				{
-					Repository: "cosmwasm/wasmd", // FOR LOCAL IMAGE USE: Docker Image Name
-					Version:    "v0.50.0",        // FOR LOCAL IMAGE USE: Docker Image Tag
-					UidGid:     "1025:1025",
-				},
-			},
-			Bin:            "wasmd",
-			Bech32Prefix:   "wasm",
-			Denom:          "stake",
-			GasPrices:      "0.00stake",
-			GasAdjustment:  1.3,
-			EncodingConfig: WasmEncodingConfig(),
-			TrustingPeriod: "508h",
-			NoHostMount:    false,
-		},
-	},`, id, id)
+func (r *ranger) Next() interface{} {
+	if r.pos < r.end {
+		r.pos++
+		return r.pos
+	}
+	return nil
+}
+
+// returns a plush.Iterator that iterates from a (inclusive) to b (exclusive)
+func betweenHelper(a, b int) plush.Iterator {
+	return &ranger{pos: a - 1, end: b - 1}
 }

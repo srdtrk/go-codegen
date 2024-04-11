@@ -1,15 +1,20 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/module"
 
 	"github.com/srdtrk/go-codegen/pkg/codegen"
+	gocmd "github.com/srdtrk/go-codegen/pkg/go/cmd"
 	"github.com/srdtrk/go-codegen/pkg/interchaintest"
 	"github.com/srdtrk/go-codegen/pkg/types"
 )
@@ -170,6 +175,26 @@ func interchaintestScaffold() *cobra.Command {
 			}
 
 			err = interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
+			if err != nil {
+				return err
+			}
+
+			p := tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stderr))
+
+			go func() {
+				_, err := p.Run()
+				if err != nil {
+					panic(err)
+				}
+			}()
+
+			err = gocmd.ModDownload(outDir, false)
+			if err != nil {
+				return err
+			}
+
+			p.Quit()
+			err = p.ReleaseTerminal()
 			if err != nil {
 				return err
 			}

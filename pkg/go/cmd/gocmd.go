@@ -1,5 +1,5 @@
 //nolint:gosec
-package cmd
+package gocmd
 
 import (
 	"os"
