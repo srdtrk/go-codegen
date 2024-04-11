@@ -32,7 +32,7 @@ func newContract[I, E, Q any](address string, codeId string, chain *cosmos.Cosmo
 // I is the instantiate message type
 // E is the execute message type
 // Q is the query message type
-func Instantiate[I, E, Q any](ctx context.Context, callerKeyName, codeId string, chain *cosmos.CosmosChain, msg I, admin string, extraExecTxArgs ...string) (*Contract[I, E, Q], error) {
+func Instantiate[I, E, Q any](ctx context.Context, callerKeyName, codeId, admin string, chain *cosmos.CosmosChain, msg I, extraExecTxArgs ...string) (*Contract[I, E, Q], error) {
 	isNoAdmin := admin == ""
 	if !isNoAdmin {
 		extraExecTxArgs = append(extraExecTxArgs, "--admin", admin)
@@ -77,6 +77,8 @@ func (c *Contract[I, E, Q]) Query(ctx context.Context, queryMsg Q, resp any) err
 
 	return nil
 }
+
+// this line is used by go-codegen # contract/dir
 
 // toString converts the message to a string using json
 func toString(msg any) string {

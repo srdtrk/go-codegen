@@ -90,7 +90,6 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 		NetworkID:        s.network,
 		SkipPathCreation: true,
 	}))
-
 <% } else { %>	ic := interchaintest.NewInterchain().AddChain(s.ChainA)
 	s.Require().NoError(ic.Build(ctx, nil, interchaintest.InterchainBuildOptions{
 		TestName:         t.Name(),
@@ -154,6 +153,14 @@ func (s *TestSuite) SetupSuite(ctx context.Context) {
 
 			// Collect diagnostics
 			chains := []string{chainSpecs[0].ChainConfig.Name<%= for (n) in between(1, ChainNum) { return ", chainSpecs[" + n + "].ChainConfig.Name" } %>}
+			collect(t, s.dockerClient, false, chains...)
+		},
+	)
+<% } else { %>
+	t.Cleanup(
+		func() {
+			// Collect diagnostics
+			chains := []string{chainSpecs[0].ChainConfig.Name}
 			collect(t, s.dockerClient, false, chains...)
 		},
 	)

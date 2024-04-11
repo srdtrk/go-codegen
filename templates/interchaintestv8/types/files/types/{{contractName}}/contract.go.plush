@@ -1,0 +1,9 @@
+package <%= PackageName %>
+
+import "<%= ModulePath %>/types"
+
+// Contract represents a <%= ContractName %> contract on a Chain.
+type Contract = types.Contract[<%= InstantiateMsgName %>, <%= ExecuteMsgName %>, <%= QueryMsgName %>]
+
+// Instantiate creates a <%= ContractName %> new contract instance on the chain.
+var Instantiate = types.Instantiate[<%= InstantiateMsgName %>, <%= ExecuteMsgName %>, <%= QueryMsgName %>]

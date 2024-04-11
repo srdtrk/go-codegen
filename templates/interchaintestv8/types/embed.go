@@ -38,3 +38,27 @@ func NewGenerator() (*genny.Generator, error) {
 
 	return g, nil
 }
+
+func NewContractGenerator(opts *AddContractOptions) (*genny.Generator, error) {
+	if err := opts.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid options: %w", err)
+	}
+
+	// Remove "files/types" prefix
+	subfs, err := fs.Sub(contractFiles, "files/types")
+	if err != nil {
+		return nil, fmt.Errorf("generator sub: %w", err)
+	}
+
+	g := genny.New()
+
+	err = g.SelectiveFS(subfs, nil, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("generator selective fs: %w", err)
+	}
+
+	g.Transformer(xgenny.Transformer(opts.plushContext()))
+	g.Transformer(genny.Replace("{{contractName}}", opts.PackageName))
+
+	return g, nil
+}

@@ -9,12 +9,11 @@ These end to end tests are designed to run in the ci, but you can also run them 
 To run the tests locally, run the following commands from this directory:
 
 ```text
-cd interchaintest/
-go test -v . -run TestWithBasicTestSuite -testify.m $TEST_NAME
+go test -v . -run=$TEST_SUITE_FN/$TEST_NAME
 ```
 
-where `$TEST_NAME` is one of the test names of the `BasicTestSuite` in `basic_test.go`. For example, to run the `TestBasic` test, you would run:
+where `$TEST_NAME` is one of the test names of the `$TEST_SUITE_FN`. For example, to run the `TestBasic` test, you would run:
 
 ```text
-go test -v . -run TestWithBasicTestSuite -testify.m TestBasic
+go test -v . -run=TestWithBasicTestSuite/TestBasic
 ```

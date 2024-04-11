@@ -63,6 +63,7 @@ func (s *MySuite) TestMessageComposer() {
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {
+	// nolint:gosec
 	_, err := exec.Command(s.goCodegenDir, "interchaintest", "scaffold", "-y").Output()
 	s.Require().NoError(err)
 
@@ -80,7 +81,8 @@ func (s *MySuite) TestInterchaintestScaffold() {
 	_, err = exec.Command("golangci-lint", "run").Output()
 	s.Require().NoError(err)
 
-	basicCmd := exec.Command("go", "test", "-v", "-run", "TestWithBasicTestSuite" , "-testify.m", "TestBasic")
+	// nolint:gosec
+	basicCmd := exec.Command("go", "test", "-v", "-run", "TestWithBasicTestSuite", "-testify.m", "TestBasic")
 
 	stdout, err := basicCmd.StdoutPipe()
 	s.Require().NoError(err)
@@ -92,8 +94,8 @@ func (s *MySuite) TestInterchaintestScaffold() {
 	scanner := bufio.NewScanner(stdout)
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
-	    m := scanner.Text()
-	    fmt.Println(m)
+		m := scanner.Text()
+		fmt.Println(m)
 	}
 
 	err = basicCmd.Wait()
