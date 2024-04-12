@@ -216,6 +216,11 @@ func interchaintestScaffold() *cobra.Command {
 	cmd.Flags().BoolP("yes", "y", false, "Skip the interactive form and use the default values.")
 	cmd.Flags().Bool("debug", false, "Debug mode. Not recommended.")
 
+	err := cmd.Flags().MarkHidden("debug")
+	if err != nil {
+		panic(err)
+	}
+
 	return cmd
 }
 
