@@ -64,8 +64,8 @@ func (s *MySuite) TestMessageComposer() {
 
 func (s *MySuite) TestInterchaintestScaffold() {
 	// nolint:gosec
-	byte, err := exec.Command(s.goCodegenDir, "interchaintest", "scaffold", "-y").Output()
-	s.T().Log(string(byte))
+	output, err := exec.Command(s.goCodegenDir, "interchaintest", "scaffold", "-y").Output()
+	s.T().Log(string(output))
 	s.T().Log(err.Error())
 	s.Require().NoError(err)
 
