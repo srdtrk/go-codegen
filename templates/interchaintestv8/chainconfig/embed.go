@@ -6,7 +6,6 @@ import (
 	"io/fs"
 
 	"github.com/gobuffalo/genny/v2"
-	"github.com/gobuffalo/plush/v4"
 
 	"github.com/srdtrk/go-codegen/pkg/xgenny"
 )
@@ -32,10 +31,7 @@ func NewGenerator(opts *Options) (*genny.Generator, error) {
 		return nil, fmt.Errorf("generator selective fs: %w", err)
 	}
 
-	ctx := plush.NewContext()
-	ctx.Set("Chains", getWasmdChains(opts.ChainNum))
-
-	g.Transformer(xgenny.Transformer(ctx))
+	g.Transformer(xgenny.Transformer(opts.plushContext()))
 
 	return g, nil
 }

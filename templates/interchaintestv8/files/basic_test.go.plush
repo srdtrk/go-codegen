@@ -94,7 +94,7 @@ func (s *BasicTestSuite) TestBasic() {
 			multiple channels in the state of the counterparty chain. However, only one of them,
 			can reach the `OPEN` state since the other will be stuck in the `TRYOPEN` state.
 		*/
-		s.Require().GreaterOrEqual(1, len(wasmd2Channels))
+		s.Require().GreaterOrEqual(len(wasmd2Channels), 1)
 
 		wasmd2Channel = wasmd2Channels[0]
 		s.Require().Equal(transfertypes.PortID, wasmd2Channel.PortID)
