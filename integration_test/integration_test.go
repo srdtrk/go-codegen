@@ -70,13 +70,13 @@ func (s *MySuite) TestInterchaintestScaffold() {
 	err = os.Chdir("e2e/interchaintestv8")
 	s.Require().NoError(err)
 
-	defer func() {
+	s.T().Cleanup(func() {
 		err = os.Chdir("../..")
 		s.Require().NoError(err)
 
 		_, err := exec.Command("rm", "-rf", "e2e").Output()
 		s.Require().NoError(err)
-	}()
+	})
 
 	_, err = exec.Command("golangci-lint", "run").Output()
 	s.Require().NoError(err)
