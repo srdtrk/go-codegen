@@ -14,7 +14,7 @@ import (
 	"golang.org/x/mod/module"
 
 	"github.com/srdtrk/go-codegen/pkg/codegen"
-	gocmd "github.com/srdtrk/go-codegen/pkg/go/cmd"
+	// gocmd "github.com/srdtrk/go-codegen/pkg/go/cmd"
 	"github.com/srdtrk/go-codegen/pkg/interchaintest"
 	"github.com/srdtrk/go-codegen/pkg/types"
 )
@@ -188,10 +188,10 @@ func interchaintestScaffold() *cobra.Command {
 				}
 			}()
 
-			err = gocmd.ModDownload(outDir, false)
-			if err != nil {
-				return err
-			}
+			// err = gocmd.ModDownload(outDir, false)
+			// if err != nil {
+			// 	return err
+			// }
 
 			p.Quit()
 			err = p.ReleaseTerminal()
