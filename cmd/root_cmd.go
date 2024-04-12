@@ -179,7 +179,7 @@ func interchaintestScaffold() *cobra.Command {
 				return err
 			}
 
-			p := tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stderr))
+			p := tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stdout))
 
 			go func() {
 				_, err := p.Run()
