@@ -56,12 +56,12 @@ func genMessagesCmd() *cobra.Command {
 				return fmt.Errorf("expected 1 argument, got %d", len(args))
 			}
 
-			packageName, err := cmd.Flags().GetString("package-name")
+			packageName, err := cmd.Flags().GetString(FlagPackageName)
 			if err != nil {
 				return err
 			}
 
-			outputFilePath, err := cmd.Flags().GetString("output")
+			outputFilePath, err := cmd.Flags().GetString(FlagOutput)
 			if err != nil {
 				return err
 			}
@@ -70,8 +70,8 @@ func genMessagesCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("output", "o", "output.go", "Path to the output file. If not provided, the output will be written to 'output.go'.")
-	cmd.Flags().String("package-name", "", "Name of the package to be used in the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
+	cmd.Flags().StringP(FlagOutput, "o", "output.go", "Path to the output file. If not provided, the output will be written to 'output.go'.")
+	cmd.Flags().String(FlagPackageName, "", "Name of the package to be used in the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
 
 	return cmd
 }
@@ -156,36 +156,40 @@ func interchaintestScaffold() *cobra.Command {
 				),
 			)
 
-			yes, err := cmd.Flags().GetBool("yes")
-			if err != nil {
-				return err
+			isModuleNameSet := cmd.Flags().Changed(FlagModuleName)
+			isOutDirSet := cmd.Flags().Changed(FlagOutDir)
+			isChainNumSet := cmd.Flags().Changed(FlagChainNum)
+			isGithubActionsSet := cmd.Flags().Changed(FlagGithubActions)
+
+			if isModuleNameSet {
+				moduleName, _ = cmd.Flags().GetString(FlagModuleName)
+			}
+			if isOutDirSet {
+				outDir, _ = cmd.Flags().GetString(FlagOutDir)
+			}
+			if isChainNumSet {
+				chainNum, _ = cmd.Flags().GetUint8(FlagChainNum)
+			}
+			if isGithubActionsSet {
+				githubActions, _ = cmd.Flags().GetBool(FlagGithubActions)
 			}
 
-			if yes {
-				moduleName = defaultGoModule
-				outDir = defaultDir
-				chainNum = 2
-				githubActions = false
-			} else {
-				err = form.Run()
+			skipForm := isModuleNameSet && isOutDirSet && isChainNumSet && isGithubActionsSet
+			if !skipForm {
+				err := form.Run()
 				if err != nil {
 					return err
 				}
 
 			}
 
-			debugMode, err := cmd.Flags().GetBool("debug")
-			if err != nil {
-				return err
-			}
-
-			err = interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
+			err := interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
 			if err != nil {
 				return err
 			}
 
 			var p *tea.Program
-			if !debugMode {
+			if !skipForm {
 				p = tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stdout))
 
 				go func() {
@@ -194,6 +198,8 @@ func interchaintestScaffold() *cobra.Command {
 						panic(err)
 					}
 				}()
+			} else {
+				types.DefaultLogger().Info().Msg("Downloading go modules...")
 			}
 
 			err = gocmd.ModDownload(outDir, false)
@@ -201,7 +207,7 @@ func interchaintestScaffold() *cobra.Command {
 				return err
 			}
 
-			if !debugMode {
+			if !skipForm {
 				p.Quit()
 				err = p.ReleaseTerminal()
 				if err != nil {
@@ -213,13 +219,10 @@ func interchaintestScaffold() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolP("yes", "y", false, "Skip the interactive form and use the default values.")
-	cmd.Flags().Bool("debug", false, "Debug mode. Not recommended.")
-
-	err := cmd.Flags().MarkHidden("debug")
-	if err != nil {
-		panic(err)
-	}
+	cmd.Flags().String(FlagModuleName, defaultGoModule, "Go module name to be used in the generated test suite.")
+	cmd.Flags().String(FlagOutDir, defaultDir, "Output directory to scaffold the testsuite in. Relative to the current working directory.")
+	cmd.Flags().Uint8(FlagChainNum, 2, "Number of chains to scaffold.")
+	cmd.Flags().Bool(FlagGithubActions, false, "Generate github actions.")
 
 	return cmd
 }
@@ -233,17 +236,17 @@ func ictestAddContract() *cobra.Command {
 				return fmt.Errorf("expected 1 argument, got %d", len(args))
 			}
 
-			suiteDir, err := cmd.Flags().GetString("suite-dir")
+			suiteDir, err := cmd.Flags().GetString(FlagSuiteDir)
 			if err != nil {
 				return err
 			}
 
-			packageName, err := cmd.Flags().GetString("contract-name")
+			packageName, err := cmd.Flags().GetString(FlagContractName)
 			if err != nil {
 				return err
 			}
 
-			msgsOnly, err := cmd.Flags().GetBool("messages-only")
+			msgsOnly, err := cmd.Flags().GetBool(FlagMessagesOnly)
 			if err != nil {
 				return err
 			}
@@ -252,9 +255,9 @@ func ictestAddContract() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String("suite-dir", ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
-	cmd.Flags().String("contract-name", "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file. Recommend leaving this empty.")
-	cmd.Flags().Bool("messages-only", false, "If set, the contract will not be added to the test suite but its messages will be added.")
+	cmd.Flags().String(FlagSuiteDir, ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
+	cmd.Flags().String(FlagContractName, "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file. Recommend leaving this empty.")
+	cmd.Flags().BoolP(FlagMessagesOnly, "m", false, "If set, the contract will not be added to the test suite but its messages will be added.")
 
 	return cmd
 }
