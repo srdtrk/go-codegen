@@ -34,7 +34,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 				RegisterDefinition(schema.Title, schema)
 			case schemas.TypeNameArray:
 				if len(schema.Definitions) == 0 {
-					panic(fmt.Sprintf("response schema for %s must have a definition for array", key))
+					types.DefaultLogger().Error().Msgf("response schema for %s must have a definition for array, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
 				}
 
 				RegisterDefinitions(schema.Definitions)
@@ -51,6 +51,19 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 			default:
 				types.DefaultLogger().Error().Msgf("response schema for %s is of unknown type %s", key, schema.Type[0])
 			}
+		case len(schema.Type) == 2 && slices.Contains(schema.Type, schemas.TypeNameNull):
+			switch {
+			case slices.Contains(schema.Type, schemas.TypeNameString):
+				// Do nothing
+			case slices.Contains(schema.Type, schemas.TypeNameNumber):
+				// Do nothing
+			case slices.Contains(schema.Type, schemas.TypeNameInteger):
+				// Do nothing
+			case slices.Contains(schema.Type, schemas.TypeNameBoolean):
+				// Do nothing
+			default:
+				types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
+			}
 		case len(schema.OneOf) != 0:
 			RegisterDefinition(key, schema)
 		case len(schema.AllOf) == 1:
@@ -58,7 +71,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 		case schema.Ref != nil:
 			RegisterDefinition(key, schema)
 		default:
-			panic(fmt.Sprintf("response %s is not supported, please create an issue in https://github.com/srdtrk/go-codegen", key))
+			types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... please create an issue in https://github.com/srdtrk/go-codegen", key)
 		}
 	}
 }
