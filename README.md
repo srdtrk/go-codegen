@@ -28,7 +28,7 @@ using [`cosmwasm-schema`](https://crates.io/crates/cosmwasm-schema).
 Once you have the JSON file, you can use it to generate the Go code.
 
 ```sh
-go-codegen generate /path/to/contract-api.json --output /path/to/output --package-name mypackage
+go-codegen generate /path/to/contract-api.json --output /path/to/output.go --package-name mypackage
 ```
 
 This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `output.go` in the current directory.
