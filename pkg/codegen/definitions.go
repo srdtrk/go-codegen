@@ -147,8 +147,28 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 		f.Type().Id(name).Struct(
 			GenerateFieldsFromProperties(schema.Properties)...,
 		)
+	case schemas.TypeNameArray:
+		switch {
+		case schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems && len(schema.Items) == *schema.MaxItems:
+			err := generateDefinitionTuple(f, name, schema)
+			if err != nil {
+				return err
+			}
+		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
+			item := &schema.Items[0]
+			itemName, err := getType(name, item, nil, "")
+			if err != nil {
+				return err
+			}
+
+			f.Type().Id(name).Index().Id(itemName)
+
+			RegisterDefinition(itemName, item)
+		default:
+			return fmt.Errorf("unsupported array definition %s", name)
+		}
 	default:
-		panic(fmt.Sprintf("unsupported type %s for definition %s", schema.Type[0], name))
+		return fmt.Errorf("unsupported type %s for definition %s", schema.Type[0], name)
 	}
 
 	return nil
@@ -296,6 +316,28 @@ func generateDefinitionAllOf(f *jen.File, name string, schema *schemas.JSONSchem
 
 	f.Comment(schema.Description)
 	f.Type().Id(name).Op(defTypeName)
+
+	return nil
+}
+
+func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	if schema.MaxItems == nil || schema.MinItems == nil || *schema.MaxItems != *schema.MinItems {
+		return fmt.Errorf("unsupported tuple from %s", name)
+	}
+
+	typeName, err := getType(name, schema, nil, "")
+	if err != nil {
+		return err
+	}
+
+	pseudoProps := make(map[string]*schemas.JSONSchema)
+	for i := 0; i < *schema.MaxItems; i++ {
+		pseudoProps[fmt.Sprintf("F%d", i)] = &schema.Items[i]
+	}
+
+	f.Type().Id(typeName).Struct(
+		GenerateFieldsFromProperties(pseudoProps)...,
+	)
 
 	return nil
 }

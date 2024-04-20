@@ -46,7 +46,7 @@ func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) (string, error) {
 	if len(schema.Type) == 0 {
 		var underlyingSchemas []*schemas.JSONSchema
-		//nolint:gocritic //TODO(serdar): use switch
+		//nolint:gocritic //TODO: use switch
 		if schema.AllOf != nil {
 			if len(schema.AllOf) > 1 {
 				return "", fmt.Errorf("length of allOf is greater than 1 in %s", name)
@@ -119,12 +119,37 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 	case schemas.TypeNameBoolean:
 		typeStr = "bool"
 	case schemas.TypeNameArray:
-		baseType, err := getType(schema.Title, &schema.Items[0], nil, "")
-		if err != nil {
-			return "", err
+		if typePrefix != "" {
+			return "", fmt.Errorf("cannot determine the type of array %s; type prefix is not supported", name)
 		}
 
-		typeStr = "[]" + baseType
+		switch {
+		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
+			baseType, err := getType(schema.Title, &schema.Items[0], nil, "")
+			if err != nil {
+				return "", err
+			}
+
+			typeStr = "[]" + baseType
+
+			isOptional = false // arrays are always nullable
+		case schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems && len(schema.Items) == *schema.MaxItems:
+			typeStr = "Tuple_of_"
+			for i := 0; i < *schema.MaxItems; i++ {
+				itemType, err := getType(name, &schema.Items[i], nil, "")
+				if err != nil {
+					return "", err
+				}
+
+				typeStr += itemType
+
+				if i < *schema.MaxItems-1 {
+					typeStr += "_and_"
+				}
+			}
+		default:
+			return "", fmt.Errorf("unsupported array definition %s", name)
+		}
 	case schemas.TypeNameObject:
 		switch {
 		case schema.Title != "":
