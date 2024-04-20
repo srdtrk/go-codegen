@@ -325,18 +325,60 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 		return fmt.Errorf("unsupported tuple from %s", name)
 	}
 
-	typeName, err := getType(name, schema, nil, "")
+	isRequired := true
+	typeName, err := getType(name, schema, &isRequired, "")
 	if err != nil {
 		return err
 	}
 
+	/*
+		f0, err := json.Marshal(t.F0)
+		if err != nil {
+			return nil, err
+		}
+
+		f1, err := json.Marshal(t.F1)
+		if err != nil {
+			return nil, err
+		}
+
+		return []byte("[" + string(f0) + "," + string(f1) + "]"), nil
+	*/
 	pseudoProps := make(map[string]*schemas.JSONSchema)
+	marshalCode := []jen.Code{}
+	var returnCode *jen.Statement
 	for i := 0; i < *schema.MaxItems; i++ {
-		pseudoProps[fmt.Sprintf("F%d", i)] = &schema.Items[i]
+		fieldName := fmt.Sprintf("F%d", i)
+		varName := fmt.Sprintf("f%d", i)
+		pseudoProps[fieldName] = &schema.Items[i]
+
+		marshalCode = append(marshalCode, jen.Id(varName).Op(",").Err().Op(":=").Qual("encoding/json", "Marshal").Call(jen.Id("t").Dot(fieldName)))
+		marshalCode = append(marshalCode, jen.If(jen.Err().Op("!=").Nil()).Block(jen.Return(jen.Nil(), jen.Err())))
+		marshalCode = append(marshalCode, jen.Line())
+
+		if i == 0 {
+			returnCode = jen.Lit("[").Op("+").String().Parens(jen.Id(varName))
+		} else {
+			returnCode = returnCode.Op("+").Lit(",").Op("+").String().Parens(jen.Id(varName))
+		}
+
+		if i == *schema.MaxItems-1 {
+			returnCode = returnCode.Op("+").Lit("]")
+			marshalCode = append(marshalCode, jen.Return(jen.Index().Byte().Parens(returnCode), jen.Nil()))
+		}
 	}
 
+	f.Comment(schema.Description)
+	f.Comment(fmt.Sprintf("%s overrides the JSON serialization/deserialization via the MarshalJSON/UnmarshalJSON methods", name))
 	f.Type().Id(typeName).Struct(
 		GenerateFieldsFromProperties(pseudoProps)...,
+	)
+
+	f.Comment(fmt.Sprintf("MarshalJSON implements the json.Marshaler interface for %s", typeName))
+	f.Func().Params(
+		jen.Id("t").Op("*").Id(typeName),
+	).Id("MarshalJSON").Params().Params(jen.Index().Byte(), jen.Error()).Block(
+		marshalCode...,
 	)
 
 	return nil
