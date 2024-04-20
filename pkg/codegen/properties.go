@@ -43,6 +43,33 @@ func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 	return jen.Id(pascalName).Op(typeStr).Tag(tags)
 }
 
+// TODO: remove this function at v0.2.0 by breaking API
+func generateFieldsFromPropertiesWithoutTags(props map[string]*schemas.JSONSchema) []jen.Code {
+	fields := []jen.Code{}
+	for name, schema := range props {
+		// add comment
+		fields = append(fields, jen.Comment(schema.Description))
+		// add field
+		fields = append(fields, generateFieldFromSchemaWithoutTags(name, schema, nil, ""))
+	}
+	return fields
+}
+
+// TODO: remove this function at v0.2.0 by breaking API
+func generateFieldFromSchemaWithoutTags(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) jen.Code {
+	if name == "" {
+		name = schema.Title
+	}
+	pascalName := strcase.ToCamel(name)
+
+	typeStr, err := getType(pascalName, schema, required, typePrefix)
+	if err != nil {
+		panic(err)
+	}
+
+	return jen.Id(pascalName).Op(typeStr)
+}
+
 func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) (string, error) {
 	if len(schema.Type) == 0 {
 		var underlyingSchemas []*schemas.JSONSchema

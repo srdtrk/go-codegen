@@ -331,47 +331,50 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 		return err
 	}
 
-	/*
-		f0, err := json.Marshal(t.F0)
-		if err != nil {
-			return nil, err
-		}
-
-		f1, err := json.Marshal(t.F1)
-		if err != nil {
-			return nil, err
-		}
-
-		return []byte("[" + string(f0) + "," + string(f1) + "]"), nil
-	*/
 	pseudoProps := make(map[string]*schemas.JSONSchema)
 	marshalCode := []jen.Code{}
-	var returnCode *jen.Statement
+	unmarshalCode := []jen.Code{
+		jen.Var().Id("arr").Index().Qual("encoding/json", "RawMessage"),
+		jen.If(jen.Err().Op(":=").Qual("encoding/json", "Unmarshal").Call(jen.Id("data"), jen.Op("&").Id("arr")), jen.Err().Op("!=").Nil()).Block(jen.Return(jen.Err())),
+		jen.If(jen.Len(jen.Id("arr")).Op("!=").Lit(*schema.MaxItems)).Block(jen.Return(jen.Qual("errors", "New").Call(jen.Lit(fmt.Sprintf("expected %d elements in the tuple", *schema.MaxItems))))),
+		jen.Line(),
+	}
+	var marshalReturnCode *jen.Statement
 	for i := 0; i < *schema.MaxItems; i++ {
 		fieldName := fmt.Sprintf("F%d", i)
-		varName := fmt.Sprintf("f%d", i)
 		pseudoProps[fieldName] = &schema.Items[i]
 
+		varName := fmt.Sprintf("f%d", i)
 		marshalCode = append(marshalCode, jen.Id(varName).Op(",").Err().Op(":=").Qual("encoding/json", "Marshal").Call(jen.Id("t").Dot(fieldName)))
 		marshalCode = append(marshalCode, jen.If(jen.Err().Op("!=").Nil()).Block(jen.Return(jen.Nil(), jen.Err())))
 		marshalCode = append(marshalCode, jen.Line())
 
-		if i == 0 {
-			returnCode = jen.Lit("[").Op("+").String().Parens(jen.Id(varName))
-		} else {
-			returnCode = returnCode.Op("+").Lit(",").Op("+").String().Parens(jen.Id(varName))
-		}
+		unmarshalCode = append(unmarshalCode, jen.If(
+			jen.Err().Op(":=").Qual("encoding/json", "Unmarshal").Call(jen.Id("arr").Index(jen.Lit(i)), jen.Op("&").Id("t").Dot(fieldName)),
+			jen.Err().Op("!=").Nil(),
+		).Block(jen.Return(jen.Err())))
+		unmarshalCode = append(unmarshalCode, jen.Line())
 
-		if i == *schema.MaxItems-1 {
-			returnCode = returnCode.Op("+").Lit("]")
-			marshalCode = append(marshalCode, jen.Return(jen.Index().Byte().Parens(returnCode), jen.Nil()))
+		if i == 0 {
+			marshalReturnCode = jen.Lit("[").Op("+").String().Parens(jen.Id(varName))
+		} else {
+			marshalReturnCode = marshalReturnCode.Op("+").Lit(",").Op("+").String().Parens(jen.Id(varName))
 		}
 	}
 
+	marshalReturnCode = marshalReturnCode.Op("+").Lit("]")
+	marshalCode = append(marshalCode, jen.Return(jen.Index().Byte().Parens(marshalReturnCode), jen.Nil()))
+	unmarshalCode = append(unmarshalCode, jen.Return(jen.Nil()))
+
+	f.Var().Defs(
+		jen.Id("_").Qual("encoding/json", "Marshaler").Op("=").Parens(jen.Op("*").Id(typeName)).Parens(jen.Nil()),
+		jen.Id("_").Qual("encoding/json", "Unmarshaler").Op("=").Parens(jen.Op("*").Id(typeName)).Parens(jen.Nil()),
+	)
+
+	f.Comment(fmt.Sprintf("%s is a tuple with custom marshal and unmarshal methods", typeName))
 	f.Comment(schema.Description)
-	f.Comment(fmt.Sprintf("%s overrides the JSON serialization/deserialization via the MarshalJSON/UnmarshalJSON methods", name))
 	f.Type().Id(typeName).Struct(
-		GenerateFieldsFromProperties(pseudoProps)...,
+		generateFieldsFromPropertiesWithoutTags(pseudoProps)...,
 	)
 
 	f.Comment(fmt.Sprintf("MarshalJSON implements the json.Marshaler interface for %s", typeName))
@@ -379,6 +382,13 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 		jen.Id("t").Op("*").Id(typeName),
 	).Id("MarshalJSON").Params().Params(jen.Index().Byte(), jen.Error()).Block(
 		marshalCode...,
+	)
+
+	f.Comment(fmt.Sprintf("UnmarshalJSON implements the json.Unmarshaler interface for %s", typeName))
+	f.Func().Params(
+		jen.Id("t").Op("*").Id(typeName),
+	).Id("UnmarshalJSON").Params(jen.Id("data").Index().Byte()).Error().Block(
+		unmarshalCode...,
 	)
 
 	return nil
