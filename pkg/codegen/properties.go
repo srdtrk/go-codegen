@@ -73,25 +73,25 @@ func generateFieldFromSchemaWithoutTags(name string, schema *schemas.JSONSchema,
 func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) (string, error) {
 	if len(schema.Type) == 0 {
 		var underlyingSchemas []*schemas.JSONSchema
-		//nolint:gocritic //TODO: use switch
-		if schema.AllOf != nil {
+		switch {
+		case schema.AllOf != nil:
 			if len(schema.AllOf) > 1 {
 				return "", fmt.Errorf("length of allOf is greater than 1 in %s", name)
 			}
 			underlyingSchemas = schema.AllOf
-		} else if schema.AnyOf != nil {
+		case schema.AnyOf != nil:
 			if len(schema.AnyOf) > 2 {
 				return "", fmt.Errorf("length of anyOf is greater than 2 in %s", name)
 			}
 			underlyingSchemas = schema.AnyOf
-		} else if schema.Ref != nil {
+		case schema.Ref != nil:
 			if !strings.HasPrefix(*schema.Ref, defPrefix) {
 				return "", fmt.Errorf("cannot determine the type of %s", name)
 			}
 
 			typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
 			return typeStr, nil
-		} else {
+		default:
 			return "", fmt.Errorf("cannot determine the type of %s", name)
 		}
 
@@ -99,10 +99,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			return "", fmt.Errorf("cannot determine the type of %s", name)
 		}
 
-		if underlyingSchemas[0].Ref == nil {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
-		}
-		if len(*underlyingSchemas[0].Ref) == 0 {
+		if underlyingSchemas[0].Ref == nil || len(*underlyingSchemas[0].Ref) == 0 {
 			return "", fmt.Errorf("cannot determine the type of %s", name)
 		}
 
@@ -111,7 +108,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			isOptional = !*required
 		} else {
 			isOptional = slices.ContainsFunc(underlyingSchemas, func(s *schemas.JSONSchema) bool {
-				return slices.Contains(s.Type, "null")
+				return slices.Contains(s.Type, schemas.TypeNameNull)
 			})
 		}
 
