@@ -148,6 +148,9 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		}
 
 		switch {
+		case len(schema.Items) > 1 && !slices.ContainsFunc(schema.Items, func(s schemas.JSONSchema) bool { return len(s.Type) != 1 || s.Type[0] != schema.Items[0].Type[0] }):
+			// This case means that all items have the same type. This is similar to having an array of a single item.
+			fallthrough
 		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
 			baseType, err := getType(schema.Title, &schema.Items[0], nil, "")
 			if err != nil {
