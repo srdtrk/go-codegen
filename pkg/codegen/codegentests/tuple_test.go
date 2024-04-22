@@ -10,7 +10,7 @@ import (
 func TestTuple(t *testing.T) {
 	t.Parallel()
 
-	t.Run("TestTuple", func(t *testing.T) {
+	t.Run("TestBasicTuple", func(t *testing.T) {
 		basicTuple := Tuple_of_ClassId_and_TokenId{
 			F0: ClassId("myClassId"),
 			F1: TokenId("myTokenId"),
@@ -24,5 +24,24 @@ func TestTuple(t *testing.T) {
 		err = json.Unmarshal(jsonBz, &unmarshalledTuple)
 		require.NoError(t, err)
 		require.Equal(t, basicTuple, unmarshalledTuple)
+	})
+
+	t.Run("TestNestedTuple", func(t *testing.T) {
+		nestedTuple := Tuple_of_Tuple_of_ClassId_and_TokenId_and_string{
+			F0: Tuple_of_ClassId_and_TokenId{
+				F0: ClassId("myClassId"),
+				F1: TokenId("myTokenId"),
+			},
+			F1: "hello",
+		}
+
+		jsonBz, err := json.Marshal(nestedTuple)
+		require.NoError(t, err)
+		require.Equal(t, `[["myClassId","myTokenId"],"hello"]`, string(jsonBz))
+
+		var unmarshalledTuple Tuple_of_Tuple_of_ClassId_and_TokenId_and_string
+		err = json.Unmarshal(jsonBz, &unmarshalledTuple)
+		require.NoError(t, err)
+		require.Equal(t, nestedTuple, unmarshalledTuple)
 	})
 }

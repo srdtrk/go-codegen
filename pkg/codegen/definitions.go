@@ -388,7 +388,7 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 
 	f.Comment(fmt.Sprintf("MarshalJSON implements the json.Marshaler interface for %s", typeName))
 	f.Func().Params(
-		jen.Id("t").Op("*").Id(typeName),
+		jen.Id("t").Id(typeName),
 	).Id("MarshalJSON").Params().Params(jen.Index().Byte(), jen.Error()).Block(
 		marshalCode...,
 	)
