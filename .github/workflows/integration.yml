@@ -6,6 +6,7 @@ on:
     paths:
       - '**.go'
       - '.github/workflows/integration.yml'
+      - '**.plush'
 permissions:
   contents: read
 jobs:
