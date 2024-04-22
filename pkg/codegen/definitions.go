@@ -158,11 +158,9 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 		)
 	case schemas.TypeNameArray:
 		switch {
-		case schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems && len(schema.Items) == *schema.MaxItems:
-			err := generateDefinitionTuple(f, name, schema)
-			if err != nil {
-				return err
-			}
+		case len(schema.Items) > 1 && !slices.ContainsFunc(schema.Items, func(s schemas.JSONSchema) bool { return len(s.Type) != 1 || s.Type[0] != schema.Items[0].Type[0] }):
+			// This case means that all items have the same type. This is similar to having an array of a single item.
+			fallthrough
 		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
 			item := &schema.Items[0]
 			itemName, err := getType(name, item, nil, "")
@@ -173,6 +171,11 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 			f.Type().Id(name).Index().Id(itemName)
 
 			RegisterDefinition(itemName, item)
+		case schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems && len(schema.Items) == *schema.MaxItems:
+			err := generateDefinitionTuple(f, name, schema)
+			if err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unsupported array definition %s", name)
 		}
