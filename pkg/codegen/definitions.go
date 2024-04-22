@@ -19,6 +19,10 @@ var (
 	generatingDefs    = false
 
 	changesMap = map[string]*schemas.JSONSchema{}
+
+	// nullableTypes is used to store the names of the nullable types generated
+	// so that they are not generated multiple times.
+	nullableTypes = []string{}
 )
 
 func generateDefinitions(f *jen.File) {
@@ -94,6 +98,7 @@ func GetDefinition(ref string) (*schemas.JSONSchema, bool) {
 	return schema, true
 }
 
+// TODO: this function may require a refactor, possibly allowing for recursive definitions.
 func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 	if err := validateAsDefinition(name, schema); err != nil {
 		panic(err)
@@ -114,6 +119,10 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 		}
 	case schema.Ref != nil:
 		if err := generateDefinitionRef(f, name, schema); err != nil {
+			panic(err)
+		}
+	case len(schema.AnyOf) != 0:
+		if _, err := generateDefinitionAnyOf(f, name, schema); err != nil {
 			panic(err)
 		}
 	default:
@@ -405,9 +414,44 @@ func generateDefinitionRef(f *jen.File, name string, schema *schemas.JSONSchema)
 	return nil
 }
 
+func generateDefinitionAnyOf(f *jen.File, name string, schema *schemas.JSONSchema) (string, error) {
+	if schema.Ref != nil {
+		if !strings.HasPrefix(*schema.Ref, defPrefix) {
+			return "", fmt.Errorf("unknown reference %s", *schema.Ref)
+		}
+
+		typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
+		return typeStr, nil
+	}
+
+	if len(schema.AnyOf) != 2 {
+		return "", fmt.Errorf("anyOf %s is not supported", name)
+	}
+
+	if len(schema.AnyOf[1].Type) != 1 || schema.AnyOf[1].Type[0] != schemas.TypeNameNull {
+		return "", fmt.Errorf("anyOf %s is not an option type", name)
+	}
+
+	subName, err := generateDefinitionAnyOf(f, name, schema.AnyOf[0])
+	if err != nil {
+		return "", err
+	}
+
+	name = "Nullable_" + subName
+	if !slices.Contains(nullableTypes, name) {
+		f.Comment(fmt.Sprintf("%s is a nullable type of %s", name, subName))
+		f.Comment(schema.Description)
+		f.Type().Id(name).Op("=").Op("*").Id(subName)
+
+		nullableTypes = append(nullableTypes, name)
+	}
+
+	return name, nil
+}
+
 // validateAsDefinition validates if the schema is a valid definition.
 func validateAsDefinition(name string, schema *schemas.JSONSchema) error {
-	if len(schema.Type) != 1 && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil {
+	if len(schema.Type) != 1 && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil && len(schema.AnyOf) == 0 {
 		return fmt.Errorf("definition %s is unsupported", name)
 	}
 
