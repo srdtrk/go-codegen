@@ -70,6 +70,9 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 			RegisterDefinition(key, schema)
 		case schema.Ref != nil:
 			RegisterDefinition(key, schema)
+		case len(schema.AnyOf) != 0:
+			RegisterDefinition(key, schema)
+			RegisterDefinitions(schema.Definitions)
 		default:
 			types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... please create an issue in https://github.com/srdtrk/go-codegen", key)
 		}

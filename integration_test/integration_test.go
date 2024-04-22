@@ -62,6 +62,7 @@ func (s *MySuite) TestMessageComposer() {
 	s.GenerateGoCodeTestWithSchema("testdata/hackatom.json")
 	s.GenerateGoCodeTestWithSchema("testdata/cw721-base.json")
 	s.GenerateGoCodeTestWithSchema("testdata/cw2981-royalties.json")
+	s.GenerateGoCodeTestWithSchema("testdata/ics721.json")
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {

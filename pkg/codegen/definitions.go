@@ -19,6 +19,10 @@ var (
 	generatingDefs    = false
 
 	changesMap = map[string]*schemas.JSONSchema{}
+
+	// nullableTypes is used to store the names of the nullable types generated
+	// so that they are not generated multiple times.
+	nullableTypes = []string{}
 )
 
 func generateDefinitions(f *jen.File) {
@@ -94,6 +98,7 @@ func GetDefinition(ref string) (*schemas.JSONSchema, bool) {
 	return schema, true
 }
 
+// TODO: this function may require a refactor, possibly allowing for recursive definitions.
 func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 	if err := validateAsDefinition(name, schema); err != nil {
 		panic(err)
@@ -114,6 +119,10 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 		}
 	case schema.Ref != nil:
 		if err := generateDefinitionRef(f, name, schema); err != nil {
+			panic(err)
+		}
+	case len(schema.AnyOf) != 0:
+		if _, err := generateDefinitionAnyOf(f, name, schema); err != nil {
 			panic(err)
 		}
 	default:
@@ -147,8 +156,31 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 		f.Type().Id(name).Struct(
 			GenerateFieldsFromProperties(schema.Properties)...,
 		)
+	case schemas.TypeNameArray:
+		switch {
+		case len(schema.Items) > 1 && !slices.ContainsFunc(schema.Items, func(s schemas.JSONSchema) bool { return len(s.Type) != 1 || s.Type[0] != schema.Items[0].Type[0] }):
+			// This case means that all items have the same type. This is similar to having an array of a single item.
+			fallthrough
+		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
+			item := &schema.Items[0]
+			itemName, err := getType(name, item, nil, "")
+			if err != nil {
+				return err
+			}
+
+			f.Type().Id(name).Index().Id(itemName)
+
+			RegisterDefinition(itemName, item)
+		case schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems && len(schema.Items) == *schema.MaxItems:
+			err := generateDefinitionTuple(f, name, schema)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unsupported array definition %s", name)
+		}
 	default:
-		panic(fmt.Sprintf("unsupported type %s for definition %s", schema.Type[0], name))
+		return fmt.Errorf("unsupported type %s for definition %s", schema.Type[0], name)
 	}
 
 	return nil
@@ -300,6 +332,80 @@ func generateDefinitionAllOf(f *jen.File, name string, schema *schemas.JSONSchem
 	return nil
 }
 
+func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	if schema.MaxItems == nil || schema.MinItems == nil || *schema.MaxItems != *schema.MinItems {
+		return fmt.Errorf("unsupported tuple from %s", name)
+	}
+
+	isRequired := true
+	typeName, err := getType(name, schema, &isRequired, "")
+	if err != nil {
+		return err
+	}
+
+	pseudoProps := make(map[string]*schemas.JSONSchema)
+	marshalCode := []jen.Code{}
+	unmarshalCode := []jen.Code{
+		jen.Var().Id("arr").Index().Qual("encoding/json", "RawMessage"),
+		jen.If(jen.Err().Op(":=").Qual("encoding/json", "Unmarshal").Call(jen.Id("data"), jen.Op("&").Id("arr")), jen.Err().Op("!=").Nil()).Block(jen.Return(jen.Err())),
+		jen.If(jen.Len(jen.Id("arr")).Op("!=").Lit(*schema.MaxItems)).Block(jen.Return(jen.Qual("errors", "New").Call(jen.Lit(fmt.Sprintf("expected %d elements in the tuple", *schema.MaxItems))))),
+		jen.Line(),
+	}
+	var marshalReturnCode *jen.Statement
+	for i := 0; i < *schema.MaxItems; i++ {
+		fieldName := fmt.Sprintf("F%d", i)
+		pseudoProps[fieldName] = &schema.Items[i]
+
+		varName := fmt.Sprintf("f%d", i)
+		marshalCode = append(marshalCode, jen.Id(varName).Op(",").Err().Op(":=").Qual("encoding/json", "Marshal").Call(jen.Id("t").Dot(fieldName)))
+		marshalCode = append(marshalCode, jen.If(jen.Err().Op("!=").Nil()).Block(jen.Return(jen.Nil(), jen.Err())))
+		marshalCode = append(marshalCode, jen.Line())
+
+		unmarshalCode = append(unmarshalCode, jen.If(
+			jen.Err().Op(":=").Qual("encoding/json", "Unmarshal").Call(jen.Id("arr").Index(jen.Lit(i)), jen.Op("&").Id("t").Dot(fieldName)),
+			jen.Err().Op("!=").Nil(),
+		).Block(jen.Return(jen.Err())))
+		unmarshalCode = append(unmarshalCode, jen.Line())
+
+		if i == 0 {
+			marshalReturnCode = jen.Lit("[").Op("+").String().Parens(jen.Id(varName))
+		} else {
+			marshalReturnCode = marshalReturnCode.Op("+").Lit(",").Op("+").String().Parens(jen.Id(varName))
+		}
+	}
+
+	marshalReturnCode = marshalReturnCode.Op("+").Lit("]")
+	marshalCode = append(marshalCode, jen.Return(jen.Index().Byte().Parens(marshalReturnCode), jen.Nil()))
+	unmarshalCode = append(unmarshalCode, jen.Return(jen.Nil()))
+
+	f.Var().Defs(
+		jen.Id("_").Qual("encoding/json", "Marshaler").Op("=").Parens(jen.Op("*").Id(typeName)).Parens(jen.Nil()),
+		jen.Id("_").Qual("encoding/json", "Unmarshaler").Op("=").Parens(jen.Op("*").Id(typeName)).Parens(jen.Nil()),
+	)
+
+	f.Comment(fmt.Sprintf("%s is a tuple with custom marshal and unmarshal methods", typeName))
+	f.Comment(schema.Description)
+	f.Type().Id(typeName).Struct(
+		generateFieldsFromPropertiesWithoutTags(pseudoProps)...,
+	)
+
+	f.Comment(fmt.Sprintf("MarshalJSON implements the json.Marshaler interface for %s", typeName))
+	f.Func().Params(
+		jen.Id("t").Id(typeName),
+	).Id("MarshalJSON").Params().Params(jen.Index().Byte(), jen.Error()).Block(
+		marshalCode...,
+	)
+
+	f.Comment(fmt.Sprintf("UnmarshalJSON implements the json.Unmarshaler interface for %s", typeName))
+	f.Func().Params(
+		jen.Id("t").Op("*").Id(typeName),
+	).Id("UnmarshalJSON").Params(jen.Id("data").Index().Byte()).Error().Block(
+		unmarshalCode...,
+	)
+
+	return nil
+}
+
 func generateDefinitionRef(f *jen.File, name string, schema *schemas.JSONSchema) error {
 	if !strings.HasPrefix(*schema.Ref, defPrefix) {
 		return fmt.Errorf("ref %s is not a definition", *schema.Ref)
@@ -311,9 +417,44 @@ func generateDefinitionRef(f *jen.File, name string, schema *schemas.JSONSchema)
 	return nil
 }
 
+func generateDefinitionAnyOf(f *jen.File, name string, schema *schemas.JSONSchema) (string, error) {
+	if schema.Ref != nil {
+		if !strings.HasPrefix(*schema.Ref, defPrefix) {
+			return "", fmt.Errorf("unknown reference %s", *schema.Ref)
+		}
+
+		typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
+		return typeStr, nil
+	}
+
+	if len(schema.AnyOf) != 2 {
+		return "", fmt.Errorf("anyOf %s is not supported", name)
+	}
+
+	if len(schema.AnyOf[1].Type) != 1 || schema.AnyOf[1].Type[0] != schemas.TypeNameNull {
+		return "", fmt.Errorf("anyOf %s is not an option type", name)
+	}
+
+	subName, err := generateDefinitionAnyOf(f, name, schema.AnyOf[0])
+	if err != nil {
+		return "", err
+	}
+
+	name = "Nullable_" + subName
+	if !slices.Contains(nullableTypes, name) {
+		f.Comment(fmt.Sprintf("%s is a nullable type of %s", name, subName))
+		f.Comment(schema.Description)
+		f.Type().Id(name).Op("=").Op("*").Id(subName)
+
+		nullableTypes = append(nullableTypes, name)
+	}
+
+	return name, nil
+}
+
 // validateAsDefinition validates if the schema is a valid definition.
 func validateAsDefinition(name string, schema *schemas.JSONSchema) error {
-	if len(schema.Type) != 1 && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil {
+	if len(schema.Type) != 1 && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil && len(schema.AnyOf) == 0 {
 		return fmt.Errorf("definition %s is unsupported", name)
 	}
 
