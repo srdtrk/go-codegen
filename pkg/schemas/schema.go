@@ -23,6 +23,8 @@ type JSONSchema struct {
 	Title                string                 `json:"title,omitempty"`                // Section 6.1.
 	Description          string                 `json:"description,omitempty"`          // Section 6.1.
 	Definitions          map[string]*JSONSchema `json:"definitions,omitempty"`
+	MaxItems             *int                   `json:"maxItems,omitempty"`
+	MinItems             *int                   `json:"minItems,omitempty"`
 
 	// Additional fields found in cosmwasm_schema
 	Enum []string `json:"enum,omitempty"`

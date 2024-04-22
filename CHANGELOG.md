@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.3 (2024-04-22)
+
+- Fixed issue [#30](https://github.com/srdtrk/go-codegen/issues/30)
+
+## v0.1.2 (2024-04-19)
+
+- Fixed issue [#26](https://github.com/srdtrk/go-codegen/issues/26)
+
 ## v0.1.1 (2024-02-14)
 
 - Added LICENSE file
