@@ -85,7 +85,7 @@ func (s *MySuite) TestInterchaintestScaffold() {
 	s.Require().NoError(err)
 
 	// nolint:gosec
-	basicCmd := exec.Command("go", "test", "-v", "-run", "TestWithBasicTestSuite", "-testify.m", "TestBasic")
+	basicCmd := exec.Command("go", "test", "-v", "-run", "TestWithBasicTestSuite/TestBasic")
 
 	stdout, err := basicCmd.StdoutPipe()
 	s.Require().NoError(err)
