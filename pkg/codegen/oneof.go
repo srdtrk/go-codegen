@@ -33,7 +33,7 @@ func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field
-		fields = append(fields, GenerateFieldFromSchema(name, schema, &ptrFalse, typePrefix))
+		fields = append(fields, generateFieldFromSchema(name, schema, &ptrFalse, typePrefix, true))
 	}
 	return fields
 }

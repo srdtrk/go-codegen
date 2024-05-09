@@ -38,7 +38,7 @@ func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle str
 
 	f.Comment(schema.Description)
 	f.Type().Id(schema.Title).Struct(
-		GenerateFieldsFromProperties(schema.Properties)...,
+		generateFieldsFromProperties(schema.Properties, true)...,
 	)
 
 	RegisterDefinitions(schema.Definitions)
