@@ -56,6 +56,7 @@ func generateCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		genMessagesCmd(),
+		genQueryCliCmd(),
 	)
 
 	return cmd
@@ -70,12 +71,12 @@ func genMessagesCmd() *cobra.Command {
 				return fmt.Errorf("expected 1 argument, got %d", len(args))
 			}
 
-			packageName, err := cmd.Flags().GetString("package-name")
+			packageName, err := cmd.Flags().GetString(PackageNameFlag)
 			if err != nil {
 				return err
 			}
 
-			outputFilePath, err := cmd.Flags().GetString("output")
+			outputFilePath, err := cmd.Flags().GetString(OutputFlag)
 			if err != nil {
 				return err
 			}
@@ -84,8 +85,39 @@ func genMessagesCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("output", "o", "output.go", "Path to the output file. If not provided, the output will be written to 'output.go'.")
-	cmd.Flags().String("package-name", "", "Name of the package to be used in the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
+	cmd.Flags().StringP(OutputFlag, "o", "output.go", "Path to the output file.")
+	cmd.Flags().String(PackageNameFlag, "p", "Package name of the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
+
+	return cmd
+}
+
+func genQueryCliCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "query-client schema_file [flags]",
+		Short: "Generate a gRPC query client for a CosmWasm contract from a JSON schema file. Requires the message types to be generated first.",
+		Long:  "Generate a gRPC query client for a CosmWasm contract from a JSON schema file. Requires the message types to be generated first. This has a dependency on wasmd, so make sure to have them installed in your go project.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// if len(args) != 1 {
+			// 	return fmt.Errorf("expected 1 argument, got %d", len(args))
+			// }
+			//
+			// packageName, err := cmd.Flags().GetString("package-name")
+			// if err != nil {
+			// 	return err
+			// }
+			//
+			// outputFilePath, err := cmd.Flags().GetString("output")
+			// if err != nil {
+			// 	return err
+			// }
+
+			// TODO: implement this
+			return nil
+		},
+	}
+
+	cmd.Flags().StringP(OutputFlag, "o", "query.go", "Path to the output file.")
+	cmd.Flags().String(PackageNameFlag, "p", "Package name of the generated go code. Should be the same as the package name of the generated message types.")
 
 	return cmd
 }
@@ -170,7 +202,7 @@ func interchaintestScaffold() *cobra.Command {
 				),
 			)
 
-			yes, err := cmd.Flags().GetBool("yes")
+			yes, err := cmd.Flags().GetBool(YesFlag)
 			if err != nil {
 				return err
 			}
@@ -188,52 +220,36 @@ func interchaintestScaffold() *cobra.Command {
 
 			}
 
-			debugMode, err := cmd.Flags().GetBool("debug")
-			if err != nil {
-				return err
-			}
-
 			err = interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
 			if err != nil {
 				return err
 			}
 
-			var p *tea.Program
-			if !debugMode {
-				p = tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stdout))
+			p := tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stdout))
 
-				go func() {
-					_, err := p.Run()
-					if err != nil {
-						panic(err)
-					}
-				}()
-			}
+			go func() {
+				_, err := p.Run()
+				if err != nil {
+					panic(err)
+				}
+			}()
 
 			err = gocmd.ModDownload(outDir, false)
 			if err != nil {
 				return err
 			}
 
-			if !debugMode {
-				p.Quit()
-				err = p.ReleaseTerminal()
-				if err != nil {
-					return err
-				}
+			p.Quit()
+			err = p.ReleaseTerminal()
+			if err != nil {
+				return err
 			}
 
 			return nil
 		},
 	}
 
-	cmd.Flags().BoolP("yes", "y", false, "Skip the interactive form and use the default values.")
-	cmd.Flags().Bool("debug", false, "Debug mode. Not recommended.")
-
-	err := cmd.Flags().MarkHidden("debug")
-	if err != nil {
-		panic(err)
-	}
+	cmd.Flags().BoolP(YesFlag, "y", false, "Skip the interactive form and use the default values.")
 
 	return cmd
 }
@@ -247,17 +263,17 @@ func ictestAddContract() *cobra.Command {
 				return fmt.Errorf("expected 1 argument, got %d", len(args))
 			}
 
-			suiteDir, err := cmd.Flags().GetString("suite-dir")
+			suiteDir, err := cmd.Flags().GetString(SuiteDirFlag)
 			if err != nil {
 				return err
 			}
 
-			packageName, err := cmd.Flags().GetString("contract-name")
+			packageName, err := cmd.Flags().GetString(ContractNameFlag)
 			if err != nil {
 				return err
 			}
 
-			msgsOnly, err := cmd.Flags().GetBool("messages-only")
+			msgsOnly, err := cmd.Flags().GetBool(MessagesOnlyFlag)
 			if err != nil {
 				return err
 			}
@@ -266,9 +282,9 @@ func ictestAddContract() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String("suite-dir", ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
-	cmd.Flags().String("contract-name", "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file. Recommend leaving this empty.")
-	cmd.Flags().Bool("messages-only", false, "If set, the contract will not be added to the test suite but its messages will be added.")
+	cmd.Flags().String(SuiteDirFlag, ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
+	cmd.Flags().String(ContractNameFlag, "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file. Recommend leaving this empty.")
+	cmd.Flags().Bool(MessagesOnlyFlag, false, "If set, the contract will not be added to the test suite but its messages will be added.")
 
 	return cmd
 }
