@@ -10,7 +10,8 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
-func GenerateCodeFromIDLSchema(schemaPath, outputPath string, packageName string) error {
+// GenerateCodeFromIDLSchema generates golang message types for your CosmWasm smart contracts.
+func GenerateCodeFromIDLSchema(schemaPath, outputPath, packageName string) error {
 	idlSchema, err := schemas.IDLSchemaFromFile(schemaPath)
 	if err != nil {
 		return err

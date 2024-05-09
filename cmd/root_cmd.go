@@ -97,22 +97,21 @@ func genQueryCliCmd() *cobra.Command {
 		Short: "Generate a gRPC query client for a CosmWasm contract from a JSON schema file. Requires the message types to be generated first.",
 		Long:  "Generate a gRPC query client for a CosmWasm contract from a JSON schema file. Requires the message types to be generated first. This has a dependency on wasmd, so make sure to have them installed in your go project.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// if len(args) != 1 {
-			// 	return fmt.Errorf("expected 1 argument, got %d", len(args))
-			// }
-			//
-			// packageName, err := cmd.Flags().GetString("package-name")
-			// if err != nil {
-			// 	return err
-			// }
-			//
-			// outputFilePath, err := cmd.Flags().GetString("output")
-			// if err != nil {
-			// 	return err
-			// }
+			if len(args) != 1 {
+				return fmt.Errorf("expected 1 argument, got %d", len(args))
+			}
 
-			// TODO: implement this
-			return nil
+			packageName, err := cmd.Flags().GetString("package-name")
+			if err != nil {
+				return err
+			}
+
+			outputFilePath, err := cmd.Flags().GetString("output")
+			if err != nil {
+				return err
+			}
+
+			return codegen.GenerateQueryClientFromIDLSchema(args[0], outputFilePath, packageName)
 		},
 	}
 
