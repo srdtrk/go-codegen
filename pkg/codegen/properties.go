@@ -11,18 +11,18 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
 
-func GenerateFieldsFromProperties(props map[string]*schemas.JSONSchema) []jen.Code {
+func generateFieldsFromProperties(props map[string]*schemas.JSONSchema, useTags bool) []jen.Code {
 	fields := []jen.Code{}
 	for name, schema := range props {
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field
-		fields = append(fields, GenerateFieldFromSchema(name, schema, nil, ""))
+		fields = append(fields, generateFieldFromSchema(name, schema, nil, "", useTags))
 	}
 	return fields
 }
 
-func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) jen.Code {
+func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool, typePrefix string, useTags bool) jen.Code {
 	if name == "" {
 		name = schema.Title
 	}
@@ -33,38 +33,15 @@ func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 		panic(err)
 	}
 
-	tags := map[string]string{}
-	if strings.HasPrefix(typeStr, "*") {
-		tags["json"] = name + ",omitempty"
-	} else {
-		tags["json"] = name
-	}
+	if useTags {
+		tags := map[string]string{}
+		if strings.HasPrefix(typeStr, "*") {
+			tags["json"] = name + ",omitempty"
+		} else {
+			tags["json"] = name
+		}
 
-	return jen.Id(pascalName).Op(typeStr).Tag(tags)
-}
-
-// TODO: remove this function at v0.2.0 by breaking API
-func generateFieldsFromPropertiesWithoutTags(props map[string]*schemas.JSONSchema) []jen.Code {
-	fields := []jen.Code{}
-	for name, schema := range props {
-		// add comment
-		fields = append(fields, jen.Comment(schema.Description))
-		// add field
-		fields = append(fields, generateFieldFromSchemaWithoutTags(name, schema, nil, ""))
-	}
-	return fields
-}
-
-// TODO: remove this function at v0.2.0 by breaking API
-func generateFieldFromSchemaWithoutTags(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) jen.Code {
-	if name == "" {
-		name = schema.Title
-	}
-	pascalName := strcase.ToCamel(name)
-
-	typeStr, err := getType(pascalName, schema, required, typePrefix)
-	if err != nil {
-		panic(err)
+		return jen.Id(pascalName).Op(typeStr).Tag(tags)
 	}
 
 	return jen.Id(pascalName).Op(typeStr)

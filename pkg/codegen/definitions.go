@@ -154,7 +154,7 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 		f.Type().Id(name).Bool()
 	case schemas.TypeNameObject:
 		f.Type().Id(name).Struct(
-			GenerateFieldsFromProperties(schema.Properties)...,
+			generateFieldsFromProperties(schema.Properties, true)...,
 		)
 	case schemas.TypeNameArray:
 		switch {
@@ -278,7 +278,7 @@ func generateDefinitionOneOfAllSame(f *jen.File, name string, schema *schemas.JS
 	case schemas.TypeNameObject:
 		f.Comment(schema.Description)
 		f.Type().Id(name).Struct(
-			GenerateFieldsFromOneOf(schema.OneOf, name+"_")...,
+			generateFieldsFromOneOf(schema.OneOf, name+"_")...,
 		)
 	case schemas.TypeNameString:
 		f.Comment(schema.Description)
@@ -386,7 +386,7 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 	f.Comment(fmt.Sprintf("%s is a tuple with custom marshal and unmarshal methods", typeName))
 	f.Comment(schema.Description)
 	f.Type().Id(typeName).Struct(
-		generateFieldsFromPropertiesWithoutTags(pseudoProps)...,
+		generateFieldsFromProperties(pseudoProps, false)...,
 	)
 
 	f.Comment(fmt.Sprintf("MarshalJSON implements the json.Marshaler interface for %s", typeName))
