@@ -25,6 +25,7 @@ var DefaultChainSpecs = []*interchaintest.ChainSpec{
 			GasPrices:      "0.00stake",
 			GasAdjustment:  1.3,
 			EncodingConfig: WasmEncodingConfig(),
+			ModifyGenesis:  defaultModifyGenesis(),
 			TrustingPeriod: "508h",
 			NoHostMount:    false,
 		},
