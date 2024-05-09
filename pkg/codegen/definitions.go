@@ -278,7 +278,7 @@ func generateDefinitionOneOfAllSame(f *jen.File, name string, schema *schemas.JS
 	case schemas.TypeNameObject:
 		f.Comment(schema.Description)
 		f.Type().Id(name).Struct(
-			GenerateFieldsFromOneOf(schema.OneOf, name+"_")...,
+			generateFieldsFromOneOf(schema.OneOf, name+"_")...,
 		)
 	case schemas.TypeNameString:
 		f.Comment(schema.Description)

@@ -9,7 +9,7 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
 
-func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
+func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
 	ptrFalse := false
 	fields := []jen.Code{}
 	for _, schema := range oneOf {

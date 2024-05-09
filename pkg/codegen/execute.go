@@ -51,7 +51,7 @@ func generateEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitles []st
 
 	f.Comment(schema.Description)
 	f.Type().Id(schema.Title).Struct(
-		GenerateFieldsFromOneOf(schema.OneOf, schema.Title+"_")...,
+		generateFieldsFromOneOf(schema.OneOf, schema.Title+"_")...,
 	)
 
 	RegisterDefinitions(schema.Definitions)
