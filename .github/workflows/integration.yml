@@ -6,11 +6,19 @@ on:
     paths:
       - '**.go'
       - '.github/workflows/integration.yml'
+      - '**.plush'
 permissions:
   contents: read
 jobs:
   test:
-    name: test
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          # List your tests here
+          - TestWithMySuite/TestMessageComposer
+          - TestWithMySuite/TestInterchaintestScaffold
+    name: ${{ matrix.test }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v4
@@ -25,5 +33,7 @@ jobs:
           working-directory: integration_test
       - name: Build
         run: make build
-      - name: Test
-        run: make integration-tests
+      - name: Run Tests
+        run: |
+          cd integration_test
+          go test -v -mod=readonly . -run=${{ matrix.test }}
