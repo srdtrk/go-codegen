@@ -27,7 +27,7 @@ func RootCmd() *cobra.Command {
 
 	rootCmd.AddCommand(
 		versionCmd(),
-		genMessagesCmd(),
+		generateCmd(),
 		genInterchaintest(),
 	)
 
@@ -43,6 +43,20 @@ func versionCmd() *cobra.Command {
 			return nil
 		},
 	}
+
+	return cmd
+}
+
+func generateCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "generate",
+		Short: "Generate Golang code for your CosmWasm smart contracts.",
+		Long:  "Generate Golang code for your CosmWasm smart contracts from a JSON schema file.",
+	}
+
+	cmd.AddCommand(
+		genMessagesCmd(),
+	)
 
 	return cmd
 }
