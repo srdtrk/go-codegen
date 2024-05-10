@@ -36,7 +36,7 @@ func (s *MySuite) SetupSuite() {
 func (s *MySuite) GenerateGoCode(schemaDir string) {
 	// Generate Go code
 	// nolint:gosec
-	_, err := exec.Command(s.goCodegenDir, "messages", schemaDir).Output()
+	_, err := exec.Command(s.goCodegenDir, "generate", "messages", schemaDir).Output()
 	s.Require().NoError(err)
 }
 
