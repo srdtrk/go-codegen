@@ -46,7 +46,6 @@ func GenerateQueryClientFromIDLSchema(schemaPath, outputPath, packageName string
 	GenerateQueryClient(f, idlSchema.Responses, idlSchema.Query)
 
 	types.DefaultLogger().Info().Msgf("Generating query client to %s", outputPath)
-	generateDefinitions(f)
 
 	if err := f.Save(outputPath); err != nil {
 		return err
@@ -126,7 +125,7 @@ func GenerateQueryClient(f *jen.File, responses map[string]*schemas.JSONSchema, 
 	)
 
 	for queryName, respSchema := range responses {
-		f.Add(generateQueryFunc(queryTitle, queryName, respSchema), jen.Line())
+		f.Add(jen.Line(), generateQueryFunc(queryTitle, queryName, respSchema))
 	}
 }
 
@@ -157,7 +156,9 @@ func generateQueryFunc(queryTitle, queryName string, respSchema *schemas.JSONSch
 		jen.Id("req").Op("*").Id(reqType),
 		jen.Id("opts").Op("...").Qual("google.golang.org/grpc", "CallOption"),
 	).Params(jen.Op("*").Id(respType), jen.Error()).Block(
-		jen.List(jen.Id("rawQueryData"), jen.Err()).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Id("req")),
+		jen.List(jen.Id("rawQueryData"), jen.Err()).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Id(queryTitle).Values(jen.Dict{
+			jen.Id(pascalName): jen.Id("req"),
+		})),
 		jen.If(jen.Err().Op("!=").Nil()).Block(
 			jen.Return(jen.Nil(), jen.Err()),
 		),
@@ -182,15 +183,18 @@ func getResponseName(key string, schema *schemas.JSONSchema) string {
 		if title == "" {
 			panic(fmt.Sprintf("response schema for %s must have a title", key))
 		}
+
 		duplicate, found := GetDefinition(title)
-		if found {
-			if duplicate.Description != schema.Description || !slices.Contains([]string{key, schema.Title}, duplicate.Title) {
-				title += "_2"
-				types.DefaultLogger().Warn().Msgf("found duplicate definition `%s` with differing implementations", schema.Title)
-				types.DefaultLogger().Warn().Msgf("renaming the duplicate definition to `%s`", title)
-			}
+		if found && (duplicate.Description != schema.Description || !slices.Contains([]string{key, schema.Title}, duplicate.Title)) {
+			title += "_2"
+			schema.Title = title
+			types.DefaultLogger().Warn().Msgf("found duplicate definition `%s` with differing implementations", schema.Title)
+			types.DefaultLogger().Warn().Msgf("renaming the duplicate definition to `%s`", title)
+
+			return getResponseName(key, schema)
 		}
 
+		RegisterDefinition(title, schema)
 		return title
 	}
 
@@ -200,5 +204,6 @@ func getResponseName(key string, schema *schemas.JSONSchema) string {
 		panic(err)
 	}
 
+	RegisterDefinition(title, schema)
 	return title
 }
