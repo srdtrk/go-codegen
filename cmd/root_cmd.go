@@ -86,7 +86,7 @@ func genMessagesCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringP(OutputFlag, "o", "output.go", "Path to the output file.")
-	cmd.Flags().String(PackageNameFlag, "p", "Package name of the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
+	cmd.Flags().StringP(PackageNameFlag, "p", "", "Package name of the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
 
 	return cmd
 }
@@ -116,7 +116,7 @@ func genQueryCliCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringP(OutputFlag, "o", "query.go", "Path to the output file.")
-	cmd.Flags().String(PackageNameFlag, "p", "Package name of the generated go code. Should be the same as the package name of the generated message types.")
+	cmd.Flags().StringP(PackageNameFlag, "p", "", "Package name of the generated go code. Should be the same as the package name of the generated message types.")
 
 	return cmd
 }

@@ -70,6 +70,8 @@ func GenerateQueryClient(f *jen.File, responses map[string]*schemas.JSONSchema, 
 	f.Comment("For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.")
 	f.Type().Id("QueryClient").Interface(methods...)
 
+	f.Line()
+
 	f.Type().Id("queryClient").Struct(
 		jen.Id("cc").Op("*").Qual("google.golang.org/grpc", "ClientConn"),
 		jen.Id("address").String(),
@@ -122,6 +124,10 @@ func GenerateQueryClient(f *jen.File, responses map[string]*schemas.JSONSchema, 
 		),
 		jen.Return(jen.Id("out").Dot("Data"), jen.Nil()),
 	)
+
+	for queryName, respSchema := range responses {
+		f.Add(generateQueryFunc(queryTitle, queryName, respSchema), jen.Line())
+	}
 }
 
 func generateQueryInterfaceFunc(queryTitle, queryName string, respSchema *schemas.JSONSchema) []jen.Code {
@@ -140,26 +146,52 @@ func generateQueryInterfaceFunc(queryTitle, queryName string, respSchema *schema
 	}
 }
 
-func getResponseName(key string, schema *schemas.JSONSchema) string {
-	switch {
-	case len(schema.Type) == 1:
-		switch schema.Type[0] {
-		case schemas.TypeNameObject:
-			title := schema.Title
-			if title == "" {
-				panic(fmt.Sprintf("response schema for %s must have a title", key))
-			}
-			duplicate, found := GetDefinition(title)
-			if found {
-				if duplicate.Description != schema.Description || !slices.Contains([]string{key, schema.Title}, duplicate.Title) {
-					title += "_2"
-					types.DefaultLogger().Warn().Msgf("found duplicate definition `%s` with differing implementations", schema.Title)
-					types.DefaultLogger().Warn().Msgf("renaming the duplicate definition to `%s`", title)
-				}
-			}
+func generateQueryFunc(queryTitle, queryName string, respSchema *schemas.JSONSchema) jen.Code {
+	pascalName := strcase.ToCamel(queryName)
 
-			return title
+	reqType := queryTitle + "_" + pascalName
+	respType := getResponseName(queryName, respSchema)
+
+	return jen.Func().Params(jen.Id("q").Op("*").Id("queryClient")).Id(pascalName).Params(
+		jen.Id("ctx").Qual("context", "Context"),
+		jen.Id("req").Op("*").Id(reqType),
+		jen.Id("opts").Op("...").Qual("google.golang.org/grpc", "CallOption"),
+	).Params(jen.Op("*").Id(respType), jen.Error()).Block(
+		jen.List(jen.Id("rawQueryData"), jen.Err()).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Id("req")),
+		jen.If(jen.Err().Op("!=").Nil()).Block(
+			jen.Return(jen.Nil(), jen.Err()),
+		),
+		jen.Line(),
+		jen.List(jen.Id("rawResponseData"), jen.Err()).Op(":=").Id("q").Dot("queryContract").Call(jen.Id("ctx"), jen.Id("rawQueryData"), jen.Id("opts").Op("...")),
+		jen.If(jen.Err().Op("!=").Nil()).Block(
+			jen.Return(jen.Nil(), jen.Err()),
+		),
+		jen.Line(),
+		jen.Var().Id("response").Id(respType),
+		jen.If(jen.Err().Op(":=").Qual("encoding/json", "Unmarshal").Call(jen.Id("rawResponseData"), jen.Op("&").Id("response")), jen.Err().Op("!=").Nil()).Block(
+			jen.Return(jen.Nil(), jen.Err()),
+		),
+		jen.Line(),
+		jen.Return(jen.Op("&").Id("response"), jen.Nil()),
+	)
+}
+
+func getResponseName(key string, schema *schemas.JSONSchema) string {
+	if len(schema.Type) == 1 && schema.Type[0] == schemas.TypeNameObject {
+		title := schema.Title
+		if title == "" {
+			panic(fmt.Sprintf("response schema for %s must have a title", key))
 		}
+		duplicate, found := GetDefinition(title)
+		if found {
+			if duplicate.Description != schema.Description || !slices.Contains([]string{key, schema.Title}, duplicate.Title) {
+				title += "_2"
+				types.DefaultLogger().Warn().Msgf("found duplicate definition `%s` with differing implementations", schema.Title)
+				types.DefaultLogger().Warn().Msgf("renaming the duplicate definition to `%s`", title)
+			}
+		}
+
+		return title
 	}
 
 	allRequired := true
