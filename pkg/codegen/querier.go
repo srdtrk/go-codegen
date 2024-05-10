@@ -98,6 +98,30 @@ func GenerateQueryClient(f *jen.File, responses map[string]*schemas.JSONSchema, 
 			jen.Id("address"): jen.Id("contractAddress"),
 		}), jen.Nil()),
 	)
+
+	f.Comment("Close closes the gRPC connection to the server")
+	f.Func().Params(jen.Id("q").Op("*").Id("queryClient")).Id("Close").Params().Error().Block(
+		jen.Return(jen.Id("q").Dot("cc").Dot("Close").Call()),
+	)
+
+	f.ImportAlias("github.com/CosmWasm/wasmd/x/wasm/types", "wasmtypes")
+	f.Comment("queryContract is a helper function to query the contract with raw query data")
+	f.Func().Params(jen.Id("q").Op("*").Id("queryClient")).Id("queryContract").Params(
+		jen.Id("ctx").Qual("context", "Context"),
+		jen.Id("rawQueryData").Index().Byte(),
+		jen.Id("opts").Op("...").Qual("google.golang.org/grpc", "CallOption"),
+	).Params(jen.Index().Byte(), jen.Error()).Block(
+		jen.Id("in").Op(":=").Op("&").Qual("github.com/CosmWasm/wasmd/x/wasm/types", "QuerySmartContractStateRequest").Values(jen.Dict{
+			jen.Id("Address"):   jen.Id("q").Dot("address"),
+			jen.Id("QueryData"): jen.Id("rawQueryData"),
+		}),
+		jen.Id("out").Op(":=").New(jen.Qual("github.com/CosmWasm/wasmd/x/wasm/types", "QuerySmartContractStateResponse")),
+		jen.Err().Op(":=").Id("q").Dot("cc").Dot("Invoke").Call(jen.Id("ctx"), jen.Lit("/cosmwasm.wasm.v1.Query/SmartContractState"), jen.Id("in"), jen.Id("out"), jen.Id("opts").Op("...")),
+		jen.If(jen.Err().Op("!=").Nil()).Block(
+			jen.Return(jen.Nil(), jen.Err()),
+		),
+		jen.Return(jen.Id("out").Dot("Data"), jen.Nil()),
+	)
 }
 
 func generateQueryInterfaceFunc(queryTitle, queryName string, respSchema *schemas.JSONSchema) []jen.Code {
