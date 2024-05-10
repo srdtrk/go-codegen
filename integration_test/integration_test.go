@@ -67,7 +67,7 @@ func (s *MySuite) TestMessageComposer() {
 
 func (s *MySuite) TestInterchaintestScaffold() {
 	// nolint:gosec
-	_, err := exec.Command(s.goCodegenDir, "interchaintest", "scaffold", "-y").Output()
+	_, err := exec.Command(s.goCodegenDir, "interchaintest", "scaffold", "-y", "--debug").Output()
 	s.Require().NoError(err)
 
 	err = os.Chdir("e2e/interchaintestv8")
