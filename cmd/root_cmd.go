@@ -216,7 +216,11 @@ func interchaintestScaffold() *cobra.Command {
 				if err != nil {
 					return err
 				}
+			}
 
+			debugMode, err := cmd.Flags().GetBool("debug")
+			if err != nil {
+				return err
 			}
 
 			err = interchaintest.GenerateTestSuite(moduleName, outDir, chainNum, githubActions)
@@ -224,24 +228,29 @@ func interchaintestScaffold() *cobra.Command {
 				return err
 			}
 
-			p := tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stdout))
+			var p *tea.Program
+			if !debugMode {
+				p = tea.NewProgram(spinner.New().Title("Downloading go modules..."), tea.WithContext(context.Background()), tea.WithOutput(os.Stdout))
 
-			go func() {
-				_, err := p.Run()
-				if err != nil {
-					panic(err)
-				}
-			}()
+				go func() {
+					_, err := p.Run()
+					if err != nil {
+						panic(err)
+					}
+				}()
+			}
 
 			err = gocmd.ModDownload(outDir, false)
 			if err != nil {
 				return err
 			}
 
-			p.Quit()
-			err = p.ReleaseTerminal()
-			if err != nil {
-				return err
+			if !debugMode {
+				p.Quit()
+				err = p.ReleaseTerminal()
+				if err != nil {
+					return err
+				}
 			}
 
 			return nil
@@ -249,6 +258,11 @@ func interchaintestScaffold() *cobra.Command {
 	}
 
 	cmd.Flags().BoolP(YesFlag, "y", false, "Skip the interactive form and use the default values.")
+	cmd.Flags().Bool(DebugFlag, false, "Enable debug mode. Not recommended.")
+
+	if err := cmd.Flags().MarkHidden("debug"); err != nil {
+		panic(err)
+	}
 
 	return cmd
 }

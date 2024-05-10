@@ -8,4 +8,6 @@ const (
 	SuiteDirFlag     = "suite-dir"
 	ContractNameFlag = "contract-name"
 	MessagesOnlyFlag = "messages-only"
+
+	DebugFlag = "debug"
 )
