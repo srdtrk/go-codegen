@@ -54,6 +54,5 @@ func GenerateCodeFromIDLSchema(schemaPath, outputPath, packageName string) error
 		return err
 	}
 
-	types.DefaultLogger().Info().Msgf("✨ All done! ✨")
 	return nil
 }
