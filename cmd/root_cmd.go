@@ -81,7 +81,13 @@ func genMessagesCmd() *cobra.Command {
 				return err
 			}
 
-			return codegen.GenerateCodeFromIDLSchema(args[0], outputFilePath, packageName)
+			err = codegen.GenerateCodeFromIDLSchema(args[0], outputFilePath, packageName)
+			if err != nil {
+				return err
+			}
+
+			types.DefaultLogger().Info().Msgf("✨ All done! ✨")
+			return nil
 		},
 	}
 
@@ -111,7 +117,13 @@ func genQueryCliCmd() *cobra.Command {
 				return err
 			}
 
-			return codegen.GenerateQueryClientFromIDLSchema(args[0], outputFilePath, packageName)
+			err = codegen.GenerateQueryClientFromIDLSchema(args[0], outputFilePath, packageName)
+			if err != nil {
+				return err
+			}
+
+			types.DefaultLogger().Info().Msgf("✨ All done! ✨")
+			return nil
 		},
 	}
 
@@ -253,6 +265,7 @@ func interchaintestScaffold() *cobra.Command {
 				}
 			}
 
+			types.DefaultLogger().Info().Msgf("✨ All done! ✨")
 			return nil
 		},
 	}
@@ -291,7 +304,13 @@ func ictestAddContract() *cobra.Command {
 				return err
 			}
 
-			return interchaintest.AddContract(args[0], suiteDir, packageName, msgsOnly)
+			err = interchaintest.AddContract(args[0], suiteDir, packageName, msgsOnly)
+			if err != nil {
+				return err
+			}
+
+			types.DefaultLogger().Info().Msgf("✨ All done! ✨")
+			return nil
 		},
 	}
 

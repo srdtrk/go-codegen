@@ -59,8 +59,6 @@ func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions 
 		return err
 	}
 
-	types.DefaultLogger().Info().Msgf("✨ All done! ✨")
-
 	return nil
 }
 
@@ -155,6 +153,13 @@ func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error
 
 	msgsPath := filepath.Join(contractsDir, packageName, "msgs.go")
 	err = codegen.GenerateCodeFromIDLSchema(schemaPath, msgsPath, packageName)
+	if err != nil {
+		_ = os.RemoveAll(filepath.Join(contractsDir, packageName))
+		return err
+	}
+
+	queryPath := filepath.Join(contractsDir, packageName, "query.go")
+	err = codegen.GenerateQueryClientFromIDLSchema(schemaPath, queryPath, packageName)
 	if err != nil {
 		_ = os.RemoveAll(filepath.Join(contractsDir, packageName))
 		return err

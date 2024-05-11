@@ -51,7 +51,6 @@ func GenerateQueryClientFromIDLSchema(schemaPath, outputPath, packageName string
 		return err
 	}
 
-	types.DefaultLogger().Info().Msgf("✨ All done! ✨")
 	return nil
 }
 
