@@ -13,15 +13,18 @@ import (
 // I is the instantiate message type
 // E is the execute message type
 // Q is the query message type
-type Contract[I, E, Q any] struct {
+// QC is the query client interface
+type Contract[I, E, Q any, QC comparable] struct {
 	Address string
 	CodeID  string
 	Chain   *cosmos.CosmosChain
+
+	qc QC
 }
 
 // newContract creates a new Contract instance
-func newContract[I, E, Q any](address string, codeId string, chain *cosmos.CosmosChain) *Contract[I, E, Q] {
-	return &Contract[I, E, Q]{
+func newContract[I, E, Q any, QC comparable](address string, codeId string, chain *cosmos.CosmosChain) *Contract[I, E, Q, QC] {
+	return &Contract[I, E, Q, QC]{
 		Address: address,
 		CodeID:  codeId,
 		Chain:   chain,
@@ -32,7 +35,8 @@ func newContract[I, E, Q any](address string, codeId string, chain *cosmos.Cosmo
 // I is the instantiate message type
 // E is the execute message type
 // Q is the query message type
-func Instantiate[I, E, Q any](ctx context.Context, callerKeyName, codeId, admin string, chain *cosmos.CosmosChain, msg I, extraExecTxArgs ...string) (*Contract[I, E, Q], error) {
+// QC is the query client interface
+func Instantiate[I, E, Q any, QC comparable](ctx context.Context, callerKeyName, codeId, admin string, chain *cosmos.CosmosChain, msg I, extraExecTxArgs ...string) (*Contract[I, E, Q, QC], error) {
 	isNoAdmin := admin == ""
 	if !isNoAdmin {
 		extraExecTxArgs = append(extraExecTxArgs, "--admin", admin)
@@ -43,21 +47,39 @@ func Instantiate[I, E, Q any](ctx context.Context, callerKeyName, codeId, admin 
 		return nil, err
 	}
 
-	return newContract[I, E, Q](contractAddr, codeId, chain), nil
+	return newContract[I, E, Q, QC](contractAddr, codeId, chain), nil
 }
 
-func (c *Contract[I, E, Q]) Port() string {
+// Port returns the port of the contract
+func (c *Contract[I, E, Q, QC]) Port() string {
 	return "wasm." + c.Address
 }
 
 // Execute executes the contract with the given execute message and returns the transaction response
-func (c *Contract[I, E, Q]) Execute(ctx context.Context, callerKeyName string, msg E, extraExecTxArgs ...string) (*sdk.TxResponse, error) {
+func (c *Contract[I, E, Q, QC]) Execute(ctx context.Context, callerKeyName string, msg E, extraExecTxArgs ...string) (*sdk.TxResponse, error) {
 	return c.Chain.ExecuteContract(ctx, callerKeyName, c.Address, toString(msg), extraExecTxArgs...)
 }
 
+// QueryClient returns the query client of the contract.
+// If the query client is not provided, it panics.
+func (c *Contract[I, E, Q, QC]) QueryClient() QC {
+	var zeroQc QC
+	if c.qc == zeroQc {
+		panic("Query client is not provided")
+	}
+
+	return c.qc
+}
+
+// SetQueryClient sets the query client of the contract.
+func (c *Contract[I, E, Q, QC]) SetQueryClient(qc QC) {
+	c.qc = qc
+}
+
 // Query queries the contract with the given query message
-// and unmarshals the response into the given response object
-func (c *Contract[I, E, Q]) Query(ctx context.Context, queryMsg Q, resp any) error {
+// and unmarshals the response into the given response object.
+// This is meant to be used if the query client is not provided.
+func (c *Contract[I, E, Q, QC]) Query(ctx context.Context, queryMsg Q, resp any) error {
 	// queryResponse is used to represent the response of a query.
 	// It may contain different types of data, so we need to unmarshal it
 	type queryResponse struct {

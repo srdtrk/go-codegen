@@ -1,9 +1,28 @@
 package <%= PackageName %>
 
-import "<%= ModulePath %>/types"
+import (
+	"context"
+
+	"github.com/strangelove-ventures/interchaintest/v8/chain/cosmos"
+
+	"<%= ModulePath %>/types"
+)
 
 // Contract represents a <%= ContractName %> contract on a Chain.
-type Contract = types.Contract[<%= InstantiateMsgName %>, <%= ExecuteMsgName %>, <%= QueryMsgName %>]
+type Contract = types.Contract[<%= InstantiateMsgName %>, <%= ExecuteMsgName %>, <%= QueryMsgName %>, QueryClient]
 
 // Instantiate creates a <%= ContractName %> new contract instance on the chain.
-var Instantiate = types.Instantiate[<%= InstantiateMsgName %>, <%= ExecuteMsgName %>, <%= QueryMsgName %>]
+func Instantiate(ctx context.Context, callerKeyName, codeId, admin string, chain *cosmos.CosmosChain, msg InstantiateMsg, extraExecTxArgs ...string) (*Contract, error) {
+	contract, err := types.Instantiate[<%= InstantiateMsgName %>, <%= ExecuteMsgName %>, <%= QueryMsgName %>, QueryClient](ctx, callerKeyName, codeId, admin, chain, msg, extraExecTxArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	queryClient, err := NewQueryClient(chain.GetHostGRPCAddress(), contract.Address)
+	if err != nil {
+		return nil, err
+	}
+	contract.SetQueryClient(queryClient)
+
+	return contract, nil
+}
