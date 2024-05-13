@@ -101,7 +101,7 @@ func (s *MySuite) TestQueryClient() {
 	s.GenerateQueryClientTest("testdata/hackatom.json")
 	s.GenerateQueryClientTest("testdata/cw721-base.json")
 	s.GenerateQueryClientTest("testdata/cw2981-royalties.json")
-	s.GenerateQueryClientTest("testdata/ics721.json") // FAILING
+	s.GenerateQueryClientTest("testdata/ics721.json")
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {

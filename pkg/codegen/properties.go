@@ -58,10 +58,21 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			}
 			underlyingSchemas = schema.AllOf
 		case schema.AnyOf != nil:
-			if len(schema.AnyOf) > 2 {
-				return "", fmt.Errorf("length of anyOf is greater than 2 in %s", name)
+			switch len(schema.AnyOf) {
+			case 0:
+				return "", fmt.Errorf("length of anyOf is 0 in %s", name)
+			case 1:
+				underlyingSchemas = schema.AnyOf
+			case 2:
+				if slices.ContainsFunc(schema.AnyOf, func(s *schemas.JSONSchema) bool {
+					return slices.Contains(s.Type, schemas.TypeNameNull)
+				}) {
+					required := true
+					return getType(name, schema.AnyOf[0], &required, typePrefix+"Nullable_")
+				}
+			default:
+				return "", fmt.Errorf("length of anyOf is %d in %s", len(schema.AllOf), name)
 			}
-			underlyingSchemas = schema.AnyOf
 		case schema.Ref != nil:
 			if !strings.HasPrefix(*schema.Ref, defPrefix) {
 				return "", fmt.Errorf("cannot determine the type of %s: ref is not prefixed with %s", name, defPrefix)
@@ -80,7 +91,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		}
 
 		if len(underlyingSchemas) == 0 || len(underlyingSchemas) > 2 {
-			return "", fmt.Errorf("cannot determine the type of %s: underlying schemas length is not 1", name)
+			return "", fmt.Errorf("cannot determine the type of %s: underlying schemas length is %d", name, len(underlyingSchemas))
 		}
 
 		if underlyingSchemas[0].Ref == nil || len(*underlyingSchemas[0].Ref) == 0 {
