@@ -41,17 +41,19 @@ func (s *MySuite) GenerateMessageTypes(schemaDir string) {
 }
 
 func (s *MySuite) GenerateMessageTypesTest(schemaDir string) {
-	s.GenerateMessageTypes(schemaDir)
+	s.Run(fmt.Sprintf("GenerateMessageTypesTest: %s", schemaDir), func() {
+		s.GenerateMessageTypes(schemaDir)
 
-	// Run tests
-	// nolint:gosec
-	_, err := exec.Command("golangci-lint", "run", "output.go").Output()
-	s.Require().NoError(err)
-
-	defer func() {
-		_, err := exec.Command("rm", "-rf", "output.go").Output()
+		// Run tests
+		// nolint:gosec
+		_, err := exec.Command("golangci-lint", "run", "output.go").Output()
 		s.Require().NoError(err)
-	}()
+
+		defer func() {
+			_, err := exec.Command("rm", "-rf", "output.go").Output()
+			s.Require().NoError(err)
+		}()
+	})
 }
 
 func (s *MySuite) GenerateQueryClient(schemaDir string) {
@@ -62,20 +64,22 @@ func (s *MySuite) GenerateQueryClient(schemaDir string) {
 }
 
 func (s *MySuite) GenerateQueryClientTest(schemaDir string) {
-	s.GenerateMessageTypes(schemaDir)
-	s.GenerateQueryClient(schemaDir)
+	s.Run(fmt.Sprintf("GenerateQueryClientTest: %s", schemaDir), func() {
+		s.GenerateMessageTypes(schemaDir)
+		s.GenerateQueryClient(schemaDir)
 
-	// Run tests
-	// nolint:gosec
-	_, err := exec.Command("golangci-lint", "run", "query.go").Output()
-	s.Require().NoError(err)
+		// Run tests
+		// nolint:gosec
+		_, err := exec.Command("golangci-lint", "run", "query.go").Output()
+		s.Require().NoError(err)
 
-	defer func() {
-		_, err := exec.Command("rm", "-rf", "output.go").Output()
-		s.Require().NoError(err)
-		_, err = exec.Command("rm", "-rf", "query.go").Output()
-		s.Require().NoError(err)
-	}()
+		defer func() {
+			_, err := exec.Command("rm", "-rf", "output.go").Output()
+			s.Require().NoError(err)
+			_, err = exec.Command("rm", "-rf", "query.go").Output()
+			s.Require().NoError(err)
+		}()
+	})
 }
 
 func (s *MySuite) TestMessageComposer() {
