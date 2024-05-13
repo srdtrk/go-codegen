@@ -36,8 +36,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 					types.DefaultLogger().Error().Msgf("response schema for %s must have a definition for array, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
 				}
 
-				RegisterDefinition(schema.Title, schema)
-				RegisterDefinitions(schema.Definitions)
+				RegisterDefinition(key, schema)
 			case schemas.TypeNameString:
 				// Do nothing
 			case schemas.TypeNameNumber:

@@ -135,8 +135,13 @@ func areDefinitionsEqual(a, b *schemas.JSONSchema) error {
 		return fmt.Errorf("nil schema")
 	}
 
+	if a.Ref != nil || b.Ref != nil {
+		// Refs are not compared
+		return nil
+	}
+
 	if !slices.Equal(a.Type, b.Type) {
-		return fmt.Errorf("different types")
+		return fmt.Errorf("different types %v != %s", a.Type, b.Type)
 	}
 
 	if len(a.Type) == 1 {
