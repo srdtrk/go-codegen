@@ -99,9 +99,9 @@ func (s *MySuite) TestQueryClient() {
 	s.GenerateQueryClientTest("testdata/account-nft.json")
 	s.GenerateQueryClientTest("testdata/cyberpunk.json")
 	s.GenerateQueryClientTest("testdata/hackatom.json")
-	s.GenerateQueryClientTest("testdata/cw721-base.json")       // FAILING
-	s.GenerateQueryClientTest("testdata/cw2981-royalties.json") // FAILING
-	s.GenerateQueryClientTest("testdata/ics721.json")           // FAILING
+	s.GenerateQueryClientTest("testdata/cw721-base.json")
+	s.GenerateQueryClientTest("testdata/cw2981-royalties.json")
+	s.GenerateQueryClientTest("testdata/ics721.json") // FAILING
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {

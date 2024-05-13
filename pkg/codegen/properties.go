@@ -9,6 +9,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 func generateFieldsFromProperties(props map[string]*schemas.JSONSchema, useTags bool) []jen.Code {
@@ -63,7 +64,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			underlyingSchemas = schema.AnyOf
 		case schema.Ref != nil:
 			if !strings.HasPrefix(*schema.Ref, defPrefix) {
-				return "", fmt.Errorf("cannot determine the type of %s", name)
+				return "", fmt.Errorf("cannot determine the type of %s: ref is not prefixed with %s", name, defPrefix)
 			}
 
 			typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
@@ -96,7 +97,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		}
 
 		if !strings.HasPrefix(*underlyingSchemas[0].Ref, defPrefix) {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: ref is not prefixed with %s", name, defPrefix)
 		}
 
 		typeStr := strings.TrimPrefix(*underlyingSchemas[0].Ref, defPrefix)
@@ -125,6 +126,9 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		typeStr = "float64"
 	case schemas.TypeNameBoolean:
 		typeStr = "bool"
+	case schemas.TypeNameNull:
+		typeStr = "any"
+		types.DefaultLogger().Warn().Msgf("null type is used in %s, any is used instead", name)
 	case schemas.TypeNameArray:
 		if typePrefix != "" {
 			return "", fmt.Errorf("cannot determine the type of array %s; type prefix is not supported", name)
@@ -172,7 +176,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			return "", fmt.Errorf("cannot determine the type of object %s", name)
 		}
 	default:
-		return "", fmt.Errorf("cannot determine the type of %s", name)
+		return "", fmt.Errorf("cannot determine the type of %s: type is not matched", name)
 	}
 
 	typeStr = typePrefix + typeStr
