@@ -17,6 +17,7 @@ jobs:
         test:
           # List your tests here
           - TestWithMySuite/TestMessageComposer
+          - TestWithMySuite/TestQueryClient
           - TestWithMySuite/TestInterchaintestScaffold
     name: ${{ matrix.test }}
     runs-on: ubuntu-latest

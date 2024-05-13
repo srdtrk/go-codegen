@@ -71,8 +71,8 @@ func RegisterDefinitions(definitions map[string]*schemas.JSONSchema) bool {
 func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 	// check if the ref is already registered
 	if regSchema, ok := globalDefRegistry[ref]; ok {
-		if !slices.Contains([]string{ref, schema.Title}, regSchema.Title) || regSchema.Description != schema.Description {
-			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations", ref))
+		if err := areDefinitionsEqual(regSchema, schema); err != nil {
+			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations: %s", ref, err.Error()))
 		}
 
 		return false
@@ -128,6 +128,40 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 	default:
 		panic(fmt.Sprintf("unsupported definition %s", name))
 	}
+}
+
+func areDefinitionsEqual(a, b *schemas.JSONSchema) error {
+	if a == nil || b == nil {
+		return fmt.Errorf("nil schema")
+	}
+
+	if a.Ref != nil || b.Ref != nil {
+		// Refs are not compared
+		return nil
+	}
+
+	if !slices.Equal(a.Type, b.Type) {
+		return fmt.Errorf("different types %v != %s", a.Type, b.Type)
+	}
+
+	if len(a.Type) == 1 {
+		switch a.Type[0] {
+		case schemas.TypeNameString:
+			return nil
+		case schemas.TypeNameInteger:
+			return nil
+		case schemas.TypeNameNumber:
+			return nil
+		case schemas.TypeNameBoolean:
+			return nil
+		}
+	}
+
+	if a.Description != b.Description {
+		return fmt.Errorf("different descriptions")
+	}
+
+	return nil
 }
 
 func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema) error {

@@ -33,36 +33,75 @@ func (s *MySuite) SetupSuite() {
 	s.goCodegenDir = "../build/go-codegen"
 }
 
-func (s *MySuite) GenerateGoCode(schemaDir string) {
+func (s *MySuite) GenerateMessageTypes(schemaDir string) {
 	// Generate Go code
 	// nolint:gosec
 	_, err := exec.Command(s.goCodegenDir, "generate", "messages", schemaDir).Output()
 	s.Require().NoError(err)
 }
 
-func (s *MySuite) GenerateGoCodeTestWithSchema(schemaDir string) {
-	s.GenerateGoCode(schemaDir)
+func (s *MySuite) GenerateMessageTypesTest(schemaDir string) {
+	s.Run(fmt.Sprintf("GenerateMessageTypesTest: %s", schemaDir), func() {
+		s.GenerateMessageTypes(schemaDir)
 
-	// Run tests
-	// nolint:gosec
-	_, err := exec.Command("golangci-lint", "run", "output.go").Output()
-	s.Require().NoError(err)
-
-	defer func() {
-		_, err := exec.Command("rm", "-rf", "output.go").Output()
+		// Run tests
+		// nolint:gosec
+		_, err := exec.Command("golangci-lint", "run", "output.go").Output()
 		s.Require().NoError(err)
-	}()
+
+		defer func() {
+			_, err := exec.Command("rm", "-rf", "output.go").Output()
+			s.Require().NoError(err)
+		}()
+	})
+}
+
+func (s *MySuite) GenerateQueryClient(schemaDir string) {
+	// Generate Go code
+	// nolint:gosec
+	_, err := exec.Command(s.goCodegenDir, "generate", "query-client", schemaDir).Output()
+	s.Require().NoError(err)
+}
+
+func (s *MySuite) GenerateQueryClientTest(schemaDir string) {
+	s.Run(fmt.Sprintf("GenerateQueryClientTest: %s", schemaDir), func() {
+		s.GenerateMessageTypes(schemaDir)
+		s.GenerateQueryClient(schemaDir)
+
+		defer func() {
+			_, err := exec.Command("rm", "-rf", "output.go").Output()
+			s.Require().NoError(err)
+			_, err = exec.Command("rm", "-rf", "query.go").Output()
+			s.Require().NoError(err)
+		}()
+
+		// Run tests
+		// nolint:gosec
+		_, err := exec.Command("golangci-lint", "run", "query.go", "output.go").Output()
+		s.Require().NoError(err)
+	})
 }
 
 func (s *MySuite) TestMessageComposer() {
-	s.GenerateGoCodeTestWithSchema("testdata/cw-ica-controller.json")
-	s.GenerateGoCodeTestWithSchema("testdata/cw3-fixed-multisig.json")
-	s.GenerateGoCodeTestWithSchema("testdata/account-nft.json")
-	s.GenerateGoCodeTestWithSchema("testdata/cyberpunk.json")
-	s.GenerateGoCodeTestWithSchema("testdata/hackatom.json")
-	s.GenerateGoCodeTestWithSchema("testdata/cw721-base.json")
-	s.GenerateGoCodeTestWithSchema("testdata/cw2981-royalties.json")
-	s.GenerateGoCodeTestWithSchema("testdata/ics721.json")
+	s.GenerateMessageTypesTest("testdata/cw-ica-controller.json")
+	s.GenerateMessageTypesTest("testdata/cw3-fixed-multisig.json")
+	s.GenerateMessageTypesTest("testdata/account-nft.json")
+	s.GenerateMessageTypesTest("testdata/cyberpunk.json")
+	s.GenerateMessageTypesTest("testdata/hackatom.json")
+	s.GenerateMessageTypesTest("testdata/cw721-base.json")
+	s.GenerateMessageTypesTest("testdata/cw2981-royalties.json")
+	s.GenerateMessageTypesTest("testdata/ics721.json")
+}
+
+func (s *MySuite) TestQueryClient() {
+	s.GenerateQueryClientTest("testdata/cw-ica-controller.json")
+	s.GenerateQueryClientTest("testdata/cw3-fixed-multisig.json")
+	s.GenerateQueryClientTest("testdata/account-nft.json")
+	s.GenerateQueryClientTest("testdata/cyberpunk.json")
+	s.GenerateQueryClientTest("testdata/hackatom.json")
+	s.GenerateQueryClientTest("testdata/cw721-base.json")
+	s.GenerateQueryClientTest("testdata/cw2981-royalties.json")
+	s.GenerateQueryClientTest("testdata/ics721.json")
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {
