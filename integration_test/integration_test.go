@@ -68,17 +68,17 @@ func (s *MySuite) GenerateQueryClientTest(schemaDir string) {
 		s.GenerateMessageTypes(schemaDir)
 		s.GenerateQueryClient(schemaDir)
 
-		// Run tests
-		// nolint:gosec
-		_, err := exec.Command("golangci-lint", "run", "query.go").Output()
-		s.Require().NoError(err)
-
 		defer func() {
 			_, err := exec.Command("rm", "-rf", "output.go").Output()
 			s.Require().NoError(err)
 			_, err = exec.Command("rm", "-rf", "query.go").Output()
 			s.Require().NoError(err)
 		}()
+
+		// Run tests
+		// nolint:gosec
+		_, err := exec.Command("golangci-lint", "run", "query.go", "output.go").Output()
+		s.Require().NoError(err)
 	})
 }
 
@@ -99,9 +99,9 @@ func (s *MySuite) TestQueryClient() {
 	s.GenerateQueryClientTest("testdata/account-nft.json")
 	s.GenerateQueryClientTest("testdata/cyberpunk.json")
 	s.GenerateQueryClientTest("testdata/hackatom.json")
-	s.GenerateQueryClientTest("testdata/cw721-base.json")
-	s.GenerateQueryClientTest("testdata/cw2981-royalties.json")
-	s.GenerateQueryClientTest("testdata/ics721.json")
+	s.GenerateQueryClientTest("testdata/cw721-base.json")       // FAILING
+	s.GenerateQueryClientTest("testdata/cw2981-royalties.json") // FAILING
+	s.GenerateQueryClientTest("testdata/ics721.json")           // FAILING
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {

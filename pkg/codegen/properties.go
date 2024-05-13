@@ -68,16 +68,22 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 
 			typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
 			return typeStr, nil
+		case schema.OneOf != nil:
+			if schema.Title != "" {
+				return schema.Title, nil
+			}
+
+			return "", fmt.Errorf("cannot determine the type of %s: title is empty", name)
 		default:
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: type is not matched; %v", name, schema)
 		}
 
 		if len(underlyingSchemas) == 0 || len(underlyingSchemas) > 2 {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: underlying schemas length is not 1", name)
 		}
 
 		if underlyingSchemas[0].Ref == nil || len(*underlyingSchemas[0].Ref) == 0 {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: ref is nil or empty", name)
 		}
 
 		var isOptional bool
