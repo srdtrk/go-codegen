@@ -18,8 +18,11 @@ Generate Go code for your CosmWasm smart contracts.
 go install github.com/srdtrk/go-codegen@latest
 ```
 
-The quickest way to generate Go code for your CosmWasm smart contracts. Currently, this tool only supports generating the types needed to interact
-with the smart contract. Support for a gRPC query client and a gRPC transaction client is planned.
+The quickest way to generate Go code for your CosmWasm smart contracts. Currently, this tool only supports generating:
+
+- Message types
+- A gRPC query client
+- An [`interchaintest`](https://github.com/strangelove-ventures/interchaintest) based test suite
 
 ## Usage
 
@@ -27,12 +30,39 @@ In order to generate Go code for your CosmWasm smart contract, you need to have 
 using [`cosmwasm-schema`](https://crates.io/crates/cosmwasm-schema).
 Once you have the JSON file, you can use it to generate the Go code.
 
+### Generate messages
+
 ```sh
-go-codegen generate /path/to/contract-api.json --output /path/to/output.go --package-name mypackage
+go-codegen generate messages /path/to/contract-api.json --output /path/to/output.go --package-name mypackage
 ```
 
-This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `output.go` in the current directory.
+This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `msgs.go` in the current directory.
 Package name is also optional, if not specified, it will use the name of the contract.
+
+### Generate gRPC query client
+
+```sh
+go-codegen generate query-client /path/to/contract-api.json --output /path/to/output.go --package-name mypackage
+```
+
+This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `query.go` in the current directory. Package name is also optional, if not specified, it will use the name of the contract. The generated code depends on the generated messages and the [wasmd package](https://pkg.go.dev/github.com/CosmWasm/wasmd). You can install it by running `go get github.com/CosmWasm/wasmd@latest` (or `go get github.com/CosmWasm/wasmd@v0.50.0` for a specific version).
+
+### Generate interchaintest test suite
+
+```sh
+go-codegen interchaintest scaffold
+```
+
+This will launch an interactive prompt to guide you through the process of generating the test suite.
+The scaffolded test suite will include a basic test and instructions on how to run it. This test suite will not contain any contract specific code, or tests, you will need to add them using `add-contract` command.
+
+### Adding a contract to the interchaintest test suite
+
+```sh
+go-codegen interchaintest add-contract /path/to/contract-api.json --suite-dir /path/to/suite
+```
+
+This will add a contract to the test suite. The suite directory is the directory where the test suite is located. If not specified, it will use the current directory. The contract API JSON file is the same file that was used to generate the messages and query client.
 
 ## Acknowledgements
 
