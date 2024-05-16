@@ -91,7 +91,7 @@ func genMessagesCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP(OutputFlag, "o", "output.go", "Path to the output file.")
+	cmd.Flags().StringP(OutputFlag, "o", "msgs.go", "Path to the output file.")
 	cmd.Flags().StringP(PackageNameFlag, "p", "", "Package name of the generated go code. If not provided, the package name will be inferred from the contract name in the schema file.")
 
 	return cmd
