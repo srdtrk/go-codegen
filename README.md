@@ -18,7 +18,7 @@ Generate Go code for your CosmWasm smart contracts.
 go install github.com/srdtrk/go-codegen@latest
 ```
 
-The quickest way to generate Go code for your CosmWasm smart contracts. Currently, this tool only supports generating:
+The quickest way to generate Go code for your CosmWasm smart contracts. Currently, this tool supports generating:
 
 - Message types
 - A gRPC query client
