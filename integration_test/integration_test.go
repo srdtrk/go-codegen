@@ -46,11 +46,11 @@ func (s *MySuite) GenerateMessageTypesTest(schemaDir string) {
 
 		// Run tests
 		// nolint:gosec
-		_, err := exec.Command("golangci-lint", "run", "output.go").Output()
+		_, err := exec.Command("golangci-lint", "run", "msgs.go").Output()
 		s.Require().NoError(err)
 
 		defer func() {
-			_, err := exec.Command("rm", "-rf", "output.go").Output()
+			_, err := exec.Command("rm", "-rf", "msgs.go").Output()
 			s.Require().NoError(err)
 		}()
 	})
@@ -69,7 +69,7 @@ func (s *MySuite) GenerateQueryClientTest(schemaDir string) {
 		s.GenerateQueryClient(schemaDir)
 
 		defer func() {
-			_, err := exec.Command("rm", "-rf", "output.go").Output()
+			_, err := exec.Command("rm", "-rf", "msgs.go").Output()
 			s.Require().NoError(err)
 			_, err = exec.Command("rm", "-rf", "query.go").Output()
 			s.Require().NoError(err)
@@ -77,7 +77,7 @@ func (s *MySuite) GenerateQueryClientTest(schemaDir string) {
 
 		// Run tests
 		// nolint:gosec
-		_, err := exec.Command("golangci-lint", "run", "query.go", "output.go").Output()
+		_, err := exec.Command("golangci-lint", "run", "query.go", "msgs.go").Output()
 		s.Require().NoError(err)
 	})
 }
