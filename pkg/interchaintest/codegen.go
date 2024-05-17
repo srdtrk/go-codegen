@@ -62,7 +62,7 @@ func GenerateTestSuite(moduleName, outDir string, chainNum uint8, githubActions 
 	return nil
 }
 
-func AddContract(schemaPath, suiteDir, contractName string, msgsOnly bool) error {
+func AddContract(schemaPath, suiteDir, contractName string) error {
 	ctx := context.Background()
 
 	types.DefaultLogger().Info().Msgf("Adding contract %s", contractName)
