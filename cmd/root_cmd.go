@@ -299,12 +299,7 @@ func ictestAddContract() *cobra.Command {
 				return err
 			}
 
-			msgsOnly, err := cmd.Flags().GetBool(MessagesOnlyFlag)
-			if err != nil {
-				return err
-			}
-
-			err = interchaintest.AddContract(args[0], suiteDir, packageName, msgsOnly)
+			err = interchaintest.AddContract(args[0], suiteDir, packageName)
 			if err != nil {
 				return err
 			}
@@ -316,7 +311,6 @@ func ictestAddContract() *cobra.Command {
 
 	cmd.Flags().String(SuiteDirFlag, ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
 	cmd.Flags().String(ContractNameFlag, "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file. Recommend leaving this empty.")
-	cmd.Flags().Bool(MessagesOnlyFlag, false, "If set, the contract will not be added to the test suite but its messages will be added.")
 
 	return cmd
 }
