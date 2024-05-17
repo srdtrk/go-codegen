@@ -45,7 +45,7 @@ Package name is also optional, if not specified, it will use the name of the con
 go-codegen generate query-client /path/to/contract-api.json --output /path/to/output.go --package-name mypackage
 ```
 
-This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `query.go` in the current directory. Package name is also optional, if not specified, it will use the name of the contract. The generated code depends on the generated messages and the [wasmd package](https://pkg.go.dev/github.com/CosmWasm/wasmd). You can install it by running `go get github.com/CosmWasm/wasmd@latest` (or `go get github.com/CosmWasm/wasmd@v0.50.0` for a specific version).
+This will generate the Go code in the specified optional output directory, if not specified, it will generate the code in `query.go` in the current directory. Package name is also optional, if not specified, it will use the name of the contract. The generated code depends on the generated messages, the [wasmd package](https://pkg.go.dev/github.com/CosmWasm/wasmd), and the [grpc package](https://pkg.go.dev/google.golang.org/grpc). You can install them by running `go get github.com/CosmWasm/wasmd@latest` (or `go get github.com/CosmWasm/wasmd@v0.50.0` for a specific version) and `go get google.golang.org/grpc@latest` (or `go get google.golang.org/grpc@v1.63.3` for a specific version).
 
 ### Generate interchaintest test suite
 
