@@ -9,7 +9,7 @@ import (
 	"github.com/srdtrk/go-codegen/pkg/schemas"
 )
 
-func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
+func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
 	ptrFalse := false
 	fields := []jen.Code{}
 	for _, schema := range oneOf {
@@ -33,7 +33,7 @@ func GenerateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field
-		fields = append(fields, GenerateFieldFromSchema(name, schema, &ptrFalse, typePrefix))
+		fields = append(fields, generateFieldFromSchema(name, schema, &ptrFalse, typePrefix, true))
 	}
 	return fields
 }

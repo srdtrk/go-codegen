@@ -9,20 +9,21 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
-func GenerateFieldsFromProperties(props map[string]*schemas.JSONSchema) []jen.Code {
+func generateFieldsFromProperties(props map[string]*schemas.JSONSchema, useTags bool) []jen.Code {
 	fields := []jen.Code{}
 	for name, schema := range props {
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field
-		fields = append(fields, GenerateFieldFromSchema(name, schema, nil, ""))
+		fields = append(fields, generateFieldFromSchema(name, schema, nil, "", useTags))
 	}
 	return fields
 }
 
-func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) jen.Code {
+func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool, typePrefix string, useTags bool) jen.Code {
 	if name == "" {
 		name = schema.Title
 	}
@@ -33,38 +34,15 @@ func GenerateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 		panic(err)
 	}
 
-	tags := map[string]string{}
-	if strings.HasPrefix(typeStr, "*") {
-		tags["json"] = name + ",omitempty"
-	} else {
-		tags["json"] = name
-	}
+	if useTags {
+		tags := map[string]string{}
+		if strings.HasPrefix(typeStr, "*") {
+			tags["json"] = name + ",omitempty"
+		} else {
+			tags["json"] = name
+		}
 
-	return jen.Id(pascalName).Op(typeStr).Tag(tags)
-}
-
-// TODO: remove this function at v0.2.0 by breaking API
-func generateFieldsFromPropertiesWithoutTags(props map[string]*schemas.JSONSchema) []jen.Code {
-	fields := []jen.Code{}
-	for name, schema := range props {
-		// add comment
-		fields = append(fields, jen.Comment(schema.Description))
-		// add field
-		fields = append(fields, generateFieldFromSchemaWithoutTags(name, schema, nil, ""))
-	}
-	return fields
-}
-
-// TODO: remove this function at v0.2.0 by breaking API
-func generateFieldFromSchemaWithoutTags(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) jen.Code {
-	if name == "" {
-		name = schema.Title
-	}
-	pascalName := strcase.ToCamel(name)
-
-	typeStr, err := getType(pascalName, schema, required, typePrefix)
-	if err != nil {
-		panic(err)
+		return jen.Id(pascalName).Op(typeStr).Tag(tags)
 	}
 
 	return jen.Id(pascalName).Op(typeStr)
@@ -80,27 +58,44 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			}
 			underlyingSchemas = schema.AllOf
 		case schema.AnyOf != nil:
-			if len(schema.AnyOf) > 2 {
-				return "", fmt.Errorf("length of anyOf is greater than 2 in %s", name)
+			switch len(schema.AnyOf) {
+			case 0:
+				return "", fmt.Errorf("length of anyOf is 0 in %s", name)
+			case 1:
+				underlyingSchemas = schema.AnyOf
+			case 2:
+				if slices.ContainsFunc(schema.AnyOf, func(s *schemas.JSONSchema) bool {
+					return slices.Contains(s.Type, schemas.TypeNameNull)
+				}) {
+					required := true
+					return getType(name, schema.AnyOf[0], &required, typePrefix+"Nullable_")
+				}
+			default:
+				return "", fmt.Errorf("length of anyOf is %d in %s", len(schema.AllOf), name)
 			}
-			underlyingSchemas = schema.AnyOf
 		case schema.Ref != nil:
 			if !strings.HasPrefix(*schema.Ref, defPrefix) {
-				return "", fmt.Errorf("cannot determine the type of %s", name)
+				return "", fmt.Errorf("cannot determine the type of %s: ref is not prefixed with %s", name, defPrefix)
 			}
 
 			typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
 			return typeStr, nil
+		case schema.OneOf != nil:
+			if schema.Title != "" {
+				return schema.Title, nil
+			}
+
+			return "", fmt.Errorf("cannot determine the type of %s: title is empty", name)
 		default:
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: type is not matched; %v", name, schema)
 		}
 
 		if len(underlyingSchemas) == 0 || len(underlyingSchemas) > 2 {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: underlying schemas length is %d", name, len(underlyingSchemas))
 		}
 
 		if underlyingSchemas[0].Ref == nil || len(*underlyingSchemas[0].Ref) == 0 {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: ref is nil or empty", name)
 		}
 
 		var isOptional bool
@@ -113,7 +108,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		}
 
 		if !strings.HasPrefix(*underlyingSchemas[0].Ref, defPrefix) {
-			return "", fmt.Errorf("cannot determine the type of %s", name)
+			return "", fmt.Errorf("cannot determine the type of %s: ref is not prefixed with %s", name, defPrefix)
 		}
 
 		typeStr := strings.TrimPrefix(*underlyingSchemas[0].Ref, defPrefix)
@@ -142,6 +137,9 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		typeStr = "float64"
 	case schemas.TypeNameBoolean:
 		typeStr = "bool"
+	case schemas.TypeNameNull:
+		typeStr = "any"
+		types.DefaultLogger().Warn().Msgf("null type is used in %s, any is used instead", name)
 	case schemas.TypeNameArray:
 		if typePrefix != "" {
 			return "", fmt.Errorf("cannot determine the type of array %s; type prefix is not supported", name)
@@ -189,7 +187,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			return "", fmt.Errorf("cannot determine the type of object %s", name)
 		}
 	default:
-		return "", fmt.Errorf("cannot determine the type of %s", name)
+		return "", fmt.Errorf("cannot determine the type of %s: type is not matched", name)
 	}
 
 	typeStr = typePrefix + typeStr

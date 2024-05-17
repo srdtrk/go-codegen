@@ -71,8 +71,8 @@ func RegisterDefinitions(definitions map[string]*schemas.JSONSchema) bool {
 func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 	// check if the ref is already registered
 	if regSchema, ok := globalDefRegistry[ref]; ok {
-		if !slices.Contains([]string{ref, schema.Title}, regSchema.Title) || regSchema.Description != schema.Description {
-			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations", ref))
+		if err := areDefinitionsEqual(regSchema, schema); err != nil {
+			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations: %s", ref, err.Error()))
 		}
 
 		return false
@@ -130,6 +130,40 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 	}
 }
 
+func areDefinitionsEqual(a, b *schemas.JSONSchema) error {
+	if a == nil || b == nil {
+		return fmt.Errorf("nil schema")
+	}
+
+	if a.Ref != nil || b.Ref != nil {
+		// Refs are not compared
+		return nil
+	}
+
+	if !slices.Equal(a.Type, b.Type) {
+		return fmt.Errorf("different types %v != %s", a.Type, b.Type)
+	}
+
+	if len(a.Type) == 1 {
+		switch a.Type[0] {
+		case schemas.TypeNameString:
+			return nil
+		case schemas.TypeNameInteger:
+			return nil
+		case schemas.TypeNameNumber:
+			return nil
+		case schemas.TypeNameBoolean:
+			return nil
+		}
+	}
+
+	if a.Description != b.Description {
+		return fmt.Errorf("different descriptions")
+	}
+
+	return nil
+}
+
 func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema) error {
 	if err := validateAsDefinition(name, schema); err != nil {
 		return err
@@ -154,7 +188,7 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 		f.Type().Id(name).Bool()
 	case schemas.TypeNameObject:
 		f.Type().Id(name).Struct(
-			GenerateFieldsFromProperties(schema.Properties)...,
+			generateFieldsFromProperties(schema.Properties, true)...,
 		)
 	case schemas.TypeNameArray:
 		switch {
@@ -278,7 +312,7 @@ func generateDefinitionOneOfAllSame(f *jen.File, name string, schema *schemas.JS
 	case schemas.TypeNameObject:
 		f.Comment(schema.Description)
 		f.Type().Id(name).Struct(
-			GenerateFieldsFromOneOf(schema.OneOf, name+"_")...,
+			generateFieldsFromOneOf(schema.OneOf, name+"_")...,
 		)
 	case schemas.TypeNameString:
 		f.Comment(schema.Description)
@@ -386,7 +420,7 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 	f.Comment(fmt.Sprintf("%s is a tuple with custom marshal and unmarshal methods", typeName))
 	f.Comment(schema.Description)
 	f.Type().Id(typeName).Struct(
-		generateFieldsFromPropertiesWithoutTags(pseudoProps)...,
+		generateFieldsFromProperties(pseudoProps, false)...,
 	)
 
 	f.Comment(fmt.Sprintf("MarshalJSON implements the json.Marshaler interface for %s", typeName))

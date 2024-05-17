@@ -17,8 +17,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 		case len(schema.Type) == 1:
 			switch schema.Type[0] {
 			case schemas.TypeNameObject:
-				title := schema.Title
-				if title == "" {
+				if schema.Title == "" {
 					panic(fmt.Sprintf("response schema for %s must have a title", key))
 				}
 				duplicate, found := GetDefinition(schema.Title)
@@ -37,7 +36,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 					types.DefaultLogger().Error().Msgf("response schema for %s must have a definition for array, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
 				}
 
-				RegisterDefinitions(schema.Definitions)
+				RegisterDefinition(key, schema)
 			case schemas.TypeNameString:
 				// Do nothing
 			case schemas.TypeNameNumber:
@@ -74,7 +73,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 			RegisterDefinition(key, schema)
 			RegisterDefinitions(schema.Definitions)
 		default:
-			types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... please create an issue in https://github.com/srdtrk/go-codegen", key)
+			types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
 		}
 	}
 }

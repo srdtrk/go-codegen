@@ -1,0 +1,78 @@
+name: e2e
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - '**.rs'
+      - '**.go'
+      - '**.toml'
+      - '**.lock'
+      - '.github/workflows/e2e.yml'
+permissions:
+  contents: read
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+      - uses: actions/checkout@v3
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.7.0
+        with:
+          version: v1.54
+          args: --timeout 5m
+          working-directory: <%= TestDir %>
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          # List your tests here
+          - TestWithBasicTestSuite/TestBasic
+    name: ${{ matrix.test }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      # You can build your contract here, you can either use docker or a custom cargo script:
+      # We've provided examples for both below:
+      # 
+      # - name: Build Contracts with Docker
+      #   run: |
+      #     docker run --rm -v "$(pwd)":/code \
+      #     --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+      #     --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+      #     cosmwasm/optimizer:0.15.1
+      # - name: Install cargo-run-script
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: install
+      #     args: cargo-run-script
+      # - name: Build Optimized Contract
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: run-script
+      #     args: optimize
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+          check-latest: true
+          cache-dependency-path: |
+             <%= TestDir %>/go.sum
+      - name: Run Tests
+        run: |
+          cd <%= TestDir %>
+          go test -v -mod=readonly . -run=${{ matrix.test }}
+      - name: Upload Diagnostics on Failure
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        continue-on-error: true
+        with:
+          name: '${{ matrix.entrypoint }}-${{ matrix.test }}'
+          path: <%= TestDir %>/diagnostics
+          retention-days: 5
