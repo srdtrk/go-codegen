@@ -198,7 +198,7 @@ func getResponseName(key string, schema *schemas.JSONSchema) string {
 	}
 
 	allRequired := true
-	title, err := getType(key, schema, &allRequired, "")
+	title, err := getType(key, schema, &allRequired, "", false)
 	if err != nil {
 		panic(err)
 	}
