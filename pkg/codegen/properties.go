@@ -29,14 +29,14 @@ func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 	}
 	pascalName := strcase.ToCamel(name)
 
-	typeStr, err := getType(pascalName, schema, required, typePrefix)
+	typeStr, err := getType(pascalName, schema, required, typePrefix, true)
 	if err != nil {
 		panic(err)
 	}
 
 	if useTags {
 		tags := map[string]string{}
-		if strings.HasPrefix(typeStr, "*") {
+		if strings.HasPrefix(typeStr, "*") || strings.HasPrefix(typeStr, "[]") {
 			tags["json"] = name + ",omitempty"
 		} else {
 			tags["json"] = name
@@ -48,7 +48,7 @@ func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 	return jen.Id(pascalName).Op(typeStr)
 }
 
-func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string) (string, error) {
+func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix string, isField bool) (string, error) {
 	if len(schema.Type) == 0 {
 		var underlyingSchemas []*schemas.JSONSchema
 		switch {
@@ -67,8 +67,13 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 				if slices.ContainsFunc(schema.AnyOf, func(s *schemas.JSONSchema) bool {
 					return slices.Contains(s.Type, schemas.TypeNameNull)
 				}) {
+					if isField {
+						notRequired := false
+						return getType(name, schema.AnyOf[0], &notRequired, typePrefix, true)
+					}
+
 					required := true
-					return getType(name, schema.AnyOf[0], &required, typePrefix+"Nullable_")
+					return getType(name, schema.AnyOf[0], &required, "Nullable_"+typePrefix, false)
 				}
 			default:
 				return "", fmt.Errorf("length of anyOf is %d in %s", len(schema.AllOf), name)
@@ -78,7 +83,11 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 				return "", fmt.Errorf("cannot determine the type of %s: ref is not prefixed with %s", name, defPrefix)
 			}
 
-			typeStr := strings.TrimPrefix(*schema.Ref, defPrefix)
+			typeStr := typePrefix + strings.TrimPrefix(*schema.Ref, defPrefix)
+			if isField && required != nil && !*required {
+				typeStr = "*" + typeStr
+			}
+
 			return typeStr, nil
 		case schema.OneOf != nil:
 			if schema.Title != "" {
@@ -150,7 +159,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			// This case means that all items have the same type. This is similar to having an array of a single item.
 			fallthrough
 		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
-			baseType, err := getType(schema.Title, &schema.Items[0], nil, "")
+			baseType, err := getType(schema.Title, &schema.Items[0], nil, "", false)
 			if err != nil {
 				return "", err
 			}
@@ -161,7 +170,7 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 		case schema.MaxItems != nil && schema.MinItems != nil && *schema.MaxItems == *schema.MinItems && len(schema.Items) == *schema.MaxItems:
 			typeStr = "Tuple_of_"
 			for i := 0; i < *schema.MaxItems; i++ {
-				itemType, err := getType(name, &schema.Items[i], nil, "")
+				itemType, err := getType(name, &schema.Items[i], nil, "", false)
 				if err != nil {
 					return "", err
 				}

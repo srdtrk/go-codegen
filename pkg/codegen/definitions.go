@@ -197,7 +197,7 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 			fallthrough
 		case len(schema.Items) == 1 && schema.MaxItems == nil && schema.MinItems == nil:
 			item := &schema.Items[0]
-			itemName, err := getType(name, item, nil, "")
+			itemName, err := getType(name, item, nil, "", false)
 			if err != nil {
 				return err
 			}
@@ -372,7 +372,7 @@ func generateDefinitionTuple(f *jen.File, name string, schema *schemas.JSONSchem
 	}
 
 	isRequired := true
-	typeName, err := getType(name, schema, &isRequired, "")
+	typeName, err := getType(name, schema, &isRequired, "", false)
 	if err != nil {
 		return err
 	}
