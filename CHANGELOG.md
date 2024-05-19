@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.1 (2024-05-19)
+
+- Fixed issue [#56](https://github.com/srdtrk/go-codegen/issues/56)
+- Updated the `interchaintest` library to the latest version (v8.3.0) [#53](https://github.com/srdtrk/go-codegen/issues/53)
+
 ## v0.2.0 (2024-05-17)
 
 - Added support for generating a gRPC query client [#14](https://github.com/srdtrk/go-codegen/issues/14)
