@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
@@ -12,6 +11,8 @@ import (
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+
+	"<%= ModulePath %>/testvalues"
 )
 
 func defaultModifyGenesis() func(ibc.ChainConfig, []byte) ([]byte, error) {
@@ -63,10 +64,8 @@ func modifyGovV1AppState(chainConfig ibc.ChainConfig, govAppState []byte) ([]byt
 	}
 
 	govGenesisState.Params.MinDeposit = sdk.NewCoins(sdk.NewCoin(chainConfig.Denom, govv1.DefaultMinDepositTokens))
-	maxDep := time.Second * 10
-	govGenesisState.Params.MaxDepositPeriod = &maxDep
-	vp := time.Second * 30
-	govGenesisState.Params.VotingPeriod = &vp
+	govGenesisState.Params.MaxDepositPeriod = &testvalues.MaxDepositPeriod
+	govGenesisState.Params.VotingPeriod = &testvalues.VotingPeriod
 
 	// govGenBz := MustProtoMarshalJSON(govGenesisState)
 
