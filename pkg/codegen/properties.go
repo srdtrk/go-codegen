@@ -36,7 +36,7 @@ func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 
 	if useTags {
 		tags := map[string]string{}
-		if strings.HasPrefix(typeStr, "*") || strings.HasPrefix(typeStr, "[]") {
+		if strings.HasPrefix(typeStr, "*") {
 			tags["json"] = name + ",omitempty"
 		} else {
 			tags["json"] = name
