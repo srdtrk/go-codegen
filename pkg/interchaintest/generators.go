@@ -8,6 +8,7 @@ import (
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/chainconfig"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/e2esuite"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/github"
+	"github.com/srdtrk/go-codegen/templates/interchaintestv8/testvalues"
 	"github.com/srdtrk/go-codegen/templates/interchaintestv8/types"
 )
 
@@ -53,7 +54,8 @@ func getInitGenerators(moduleName string, chainNum uint8, outDir string, githubA
 
 	// chain config generator
 	cg, err := chainconfig.NewGenerator(&chainconfig.Options{
-		ChainNum: chainNum,
+		ModulePath: moduleName,
+		ChainNum:   chainNum,
 	})
 	if err != nil {
 		return nil, err
@@ -66,6 +68,13 @@ func getInitGenerators(moduleName string, chainNum uint8, outDir string, githubA
 		return nil, err
 	}
 	generators = append(generators, tg)
+
+	// testvalues generator
+	tvg, err := testvalues.NewGenerator(&testvalues.Options{})
+	if err != nil {
+		return nil, err
+	}
+	generators = append(generators, tvg)
 
 	return generators, nil
 }
