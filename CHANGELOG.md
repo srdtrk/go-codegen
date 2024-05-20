@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.2 (2024-05-20)
+
+- Fixed issue [#61](https://github.com/srdtrk/go-codegen/issues/61)
+- Added the testvalues package to the generated test suite [#60](https://github.com/srdtrk/go-codegen/issues/60)
+
 ## v0.2.1 (2024-05-19)
 
 - Fixed issue [#56](https://github.com/srdtrk/go-codegen/issues/56)
