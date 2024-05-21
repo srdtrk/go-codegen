@@ -3,20 +3,20 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'CosmWasm Interchain Accounts Controller',
-  tagline: 'A pure CosmWasm implementation of ICS-27.',
+  title: 'go-codegen',
+  tagline: 'Generate Go code for your CosmWasm smart contracts.',
   favicon: 'img/logo.svg',
 
   // Set the production url of your site here
   url: 'https://srdtrk.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/cw-ica-controller/',
+  baseUrl: '/go-codegen/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'srdtrk', // Usually your GitHub org/user name.
-  projectName: 'cw-ica-controller', // Usually your repo name.
+  projectName: 'go-codegen', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -38,7 +38,7 @@ const config: Config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/srdtrk/cw-ica-controller/tree/main/docs',
+            'https://github.com/srdtrk/go-codegen/tree/main/docs',
           // Routed the docs to the root path
           routeBasePath: "/",
           sidebarCollapsed: false,
@@ -69,9 +69,9 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'https://opengraph.githubassets.com/946cd03a2431502cb8cdbb579ca48c56e2c4060ca5ff0b25e13739f3fc08b512/srdtrk/cw-ica-controller',
+    // image: 'https://opengraph.githubassets.com/946cd03a2431502cb8cdbb579ca48c56e2c4060ca5ff0b25e13739f3fc08b512/srdtrk/cw-ica-controller',
     navbar: {
-      title: 'cw-ica-controller',
+      title: 'go-codegen',
       logo: {
         alt: 'Logo',
         src: 'img/logo.svg',
@@ -81,7 +81,7 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'docsSidebar',
           position: 'left',
-          label: 'Documentation',
+          label: 'Tutorial',
         },
         {
           type: "docsVersionDropdown",
@@ -89,7 +89,7 @@ const config: Config = {
           dropdownActiveClassDisabled: true,
         },
         {
-          href: 'https://github.com/srdtrk/cw-ica-controller',
+          href: 'https://github.com/srdtrk/go-codegen',
           label: 'GitHub',
           position: 'right',
         },
@@ -99,10 +99,10 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Tutorial',
           items: [
             {
-              label: 'Documentation',
+              label: 'Tutorial',
               to: '/main',
             },
           ],
@@ -110,10 +110,6 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
             {
               label: 'Twitter',
               href: 'https://twitter.com/srdtrk',
@@ -125,7 +121,7 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/srdtrk/cw-ica-controller',
+              href: 'https://github.com/srdtrk/go-codegen',
             },
           ],
         },
@@ -160,13 +156,18 @@ const config: Config = {
         ],
       },
     ],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async function myPlugin(context, options) {
       return {
         name: "docusaurus-tailwindcss",
         configurePostCss(postcssOptions) {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           postcssOptions.plugins.push(require("postcss-import"));
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           postcssOptions.plugins.push(require("tailwindcss/nesting"));
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           postcssOptions.plugins.push(require("tailwindcss"));
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
           postcssOptions.plugins.push(require("autoprefixer"));
           return postcssOptions;
         },

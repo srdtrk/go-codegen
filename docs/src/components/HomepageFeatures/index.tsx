@@ -16,38 +16,39 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Generate Message Types',
     Svg: EasyDeploySvg,
     description: (
       <>
-        Create an interchain account (ICA) with a single instantiate call. No contracts are needed
-        on the counterparty chain. Send ICA transactions as `CosmosMsg`s and receive callbacks.
+        go-codegen generates message types in golang for you CosmWasm application. It is as easy as
+        running a command.
       </>
     ),
   },
   {
-    title: 'Universal CosmWasm Support',
+    title: 'Generate gRPC Clients',
     Svg: UniversalSupportSvg,
     description: (
       <>
-        CosmWasm ICA Controller can be deployed on all IBC enabled CosmWasm chains. There is no need
-        for custom chain bindings or even the interchain accounts module.
+        go-codegen generates gRPC clients in golang for you CosmWasm application. Currently, only the
+        gRPC query client is supported. A transaction client is on the roadmap.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'A Streamlined IBC Testing Suite',
     Svg: FocusSvg,
     description: (
       <>
-        CosmWasm ICA Controller lets you focus on your application, and we&apos;ll do the IBC chores
-        in the background. Go ahead and build your cross-chain application.
+        go-codegen generates an entire testing suite for your CosmWasm application. This end-to-end
+        testing suite is designed to help you test your application in a local and realistic environment.
+        Powered by <a href="https://github.com/strangelove-ventures/interchaintest">interchaintest</a>.
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, Svg, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
