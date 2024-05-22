@@ -51,13 +51,12 @@ Read more about interchaintest in its [README.md](https://github.com/strangelove
 
 ### Why use this over other scripting solutions?
 
-- Go is a great scripting language.
-- This runs completely locally while closely resembling production environment.
-    - This allows you to run all the tests in CI.
-    - Reliable.
-- Interchaintest is used by many core teams, and top cosmwasm projects.
-    - IBC team, Strangelove, Osmosis, DAODAO, TODO
-- Intterchaintest's development is funded by the ICF.
+- **Go as a Scripting Language**
+- **Local Testing Environment:** The testing framework operates entirely locally, mirroring a production environment closely. This ensures that tests are reliable and can be seamlessly integrated into continuous integration (CI) pipelines.
+- **Industry Adoption:** Interchaintest, the underlying framework, is widely adopted by leading projects and core teams in the CosmWasm ecosystem, including Strangelove, the IBC team, Noble, DAODAO, and others.
+- **Funding and Support:** The development of Interchaintest is supported by the Interchain Foundation (ICF), ensuring ongoing improvements and stability.
+
+By using go-codegen, your CosmWasm application can benefit from a well-supported, reliable, widely-adopted testing framework.
 
 ## Scope
 
