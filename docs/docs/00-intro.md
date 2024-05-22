@@ -8,7 +8,7 @@ slug: /
 import HighlightTag from '@site/src/components/HighlightTag';
 import HighlightBox from '@site/src/components/HighlightBox';
 
-# go-codegen Tutorial
+# `go-codegen` Tutorial
 
 <HighlightTag type="tutorial"/><HighlightTag type="guided-coding"/><HighlightTag type="cosmwasm"/><HighlightTag type="developer"/><HighlightTag type="ibc-go"/><HighlightTag type="advanced"/>
 
