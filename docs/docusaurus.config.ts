@@ -40,7 +40,7 @@ const config: Config = {
           editUrl:
             'https://github.com/srdtrk/go-codegen/tree/main/docs',
           // Routed the docs to the root path
-          routeBasePath: "/",
+          routeBasePath: "/tutorial",
           sidebarCollapsed: false,
         },
         theme: {
@@ -103,7 +103,7 @@ const config: Config = {
           items: [
             {
               label: 'Tutorial',
-              to: '/main',
+              to: '/tutorial',
             },
           ],
         },
