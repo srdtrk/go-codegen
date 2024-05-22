@@ -109,7 +109,6 @@ function HighlightBox({ type, title, children }) {
   };
   const iconStyles = {
     alignSelf: "center",
-    marginTop: "10px",
     filter: styles.darkMode ? "brightness(0) invert(1)" : "brightness(0)",
   };
   const titleStyle = {
@@ -141,7 +140,7 @@ function HighlightBox({ type, title, children }) {
           }
         `}
       </style>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px", marginTop: "10px" }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "4px", marginTop: "10px" }}>
         <div style={iconStyles}>{styles.icon}</div>
         <h3 style={titleStyle}>{title}</h3>
       </div>

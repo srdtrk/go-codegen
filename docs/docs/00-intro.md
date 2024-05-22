@@ -17,17 +17,37 @@ Powered by [interchaintest](https://github.com/strangelove-ventures/interchainte
 
 <HighlightBox type="prerequisite" title="Prerequisites">
 
-- Basic knowledge of [golang](TODO)
-- Basic knowledge of [CosmWasm](TODO)
-- Basic knowledge of [github actions](TODO)
+- Basic knowledge of [golang](https://go.dev/)
+- Basic knowledge of [CosmWasm](https://cosmwasm.com/)
+- Basic knowledge of [github actions](https://github.com/features/actions)
 
 </HighlightBox>
 
 ## Context
 
-### What is interchaintest?
+### What is go-codegen?
 
-TODO
+go-codegen is a tool that generates go code for CosmWasm applications. It can currently generate the following:
+
+- Message definitions for a contract.
+- gRPC query client for a contract.
+- An end-to-end test suite for a contract based on interchaintest.
+
+<HighlightBox type="info" title="What is interchaintest?">
+
+`interchaintest` is a framework for testing blockchain functionality and interoperability between chains, primarily with the Inter-Blockchain Communication (IBC) protocol.
+
+It can quickly spin up custom testnets and dev environments to test IBC, Relayer setup, chain infrastructure, smart contracts, etc. Interchaintest orchestrates Go tests that utilize Docker containers for multiple IBC-compatible blockchains.
+
+In order to ship production-grade software for the Interchain, we needed sophisticated developer tooling...but IBC and Web3 have a lot of moving parts, which can lead to a steep learning curve and all sorts of pain.
+
+- repeatedly building repo-specific, Docker- and shell-based testing solutions,
+- duplication of effort, and
+- difficulty in repurposing existing testing harnesses for new problem domains.
+
+Read more about interchaintest in its [README.md](https://github.com/strangelove-ventures/interchaintest/blob/main/README.md).
+
+</HighlightBox>
 
 ### Why use this over other scripting solutions?
 

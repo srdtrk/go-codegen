@@ -18,7 +18,7 @@ In this section, you can find all you need to install:
 - [Git](https://git-scm.com/)
 - [Go v1.22.3](https://go.dev/)
 - [go-codegen v0.2.2](https://github.com/srdtrk/go-codegen)
-- [Docker](TODO)
+- [Docker](https://www.docker.com/)
 
 </HighlightBox>
 
@@ -46,7 +46,7 @@ go version
 
 ## go-codegen
 
-Install go-codegen by following the instructions on the [README.md](TODO) or by using the command below.
+Install go-codegen by following the instructions on the [README.md](https://github.com/srdtrk/go-codegen/blob/main/README.md) or by using the command below.
 
 ```bash
 go install github.com/srdtrk/go-codegen@v0.2.2
@@ -60,4 +60,8 @@ go-codegen version
 
 ## Docker
 
-TODO
+Install Docker following the instructions on the [Docker documentation](https://docs.docker.com/get-docker/). Test if Docker is installed by running the following command:
+
+```bash
+docker --version
+```
