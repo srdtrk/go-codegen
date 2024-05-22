@@ -10,13 +10,13 @@ const tags = {
     color: "#54ffe0",
     label: "Concepts",
     isBright: true,
-    description: "Learn about the concepts behind 'cw-ica-controller'",
+    description: "Learn about the concepts behind 'go-codegen'",
   },
   basics: {
     color: "#F69900",
     label: "Basics",
     isBright: true,
-    description: "Learn the basics of 'cw-ica-controller'",
+    description: "Learn the basics of 'go-codegen'",
   },
   "ibc-go": {
     color: "#ff1717",
@@ -48,7 +48,7 @@ const tags = {
     color: "#AABAFF",
     label: "Developer",
     isBright: true,
-    description: "This section includes content for external developers using the 'cw-ica-controller'",
+    description: "This section includes content for external developers using the 'go-codegen'",
   },
   tutorial: {
     color: "#F46800",
@@ -67,27 +67,27 @@ const HighlightTag = ({ type, version }) => {
   const description = styles.description || "";
 
   return (
-  <HoverCard>
-    <HoverCardTrigger>
-      <span
-        style={{
-          backgroundColor: styles.color,
-          borderRadius: "2px",
-          color: styles.isBright ? "black" : "white",
-          padding: "0.3rem",
-          marginBottom: "1rem",
-          marginRight: "0.25rem",
-          display: "inline-block",
-        }}
-      >
-        {styles.label}
-        {version ? ` ${version}` : ""}
-      </span>
-    </HoverCardTrigger>
-    <HoverCardContent>
-      {description}
-    </HoverCardContent>
-  </HoverCard>
+    <HoverCard>
+      <HoverCardTrigger>
+        <span
+          style={{
+            backgroundColor: styles.color,
+            borderRadius: "2px",
+            color: styles.isBright ? "black" : "white",
+            padding: "0.3rem",
+            marginBottom: "1rem",
+            marginRight: "0.25rem",
+            display: "inline-block",
+          }}
+        >
+          {styles.label}
+          {version ? ` ${version}` : ""}
+        </span>
+      </HoverCardTrigger>
+      <HoverCardContent>
+        {description}
+      </HoverCardContent>
+    </HoverCard>
   );
 };
 

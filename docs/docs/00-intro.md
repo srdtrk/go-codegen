@@ -8,9 +8,9 @@ slug: /
 import HighlightTag from '@site/src/components/HighlightTag';
 import HighlightBox from '@site/src/components/HighlightBox';
 
-# go-codegen
+# go-codegen Tutorial
 
-<HighlightTag type="concepts"/><HighlightTag type="basics"/>
+<HighlightTag type="tutorial"/><HighlightTag type="guided-coding"/><HighlightTag type="cosmwasm"/><HighlightTag type="developer"/><HighlightTag type="ibc-go"/><HighlightTag type="advanced"/>
 
 This is a tutorial for writing end-to-end test suite for IBC enabled CosmWasm applications using go-codegen.
 Powered by [interchaintest](https://github.com/strangelove-ventures/interchaintest).
@@ -31,7 +31,13 @@ TODO
 
 ### Why use this over other scripting solutions?
 
-TODO
+- Go is a great scripting language.
+- This runs completely locally while closely resembling production environment.
+    - This allows you to run all the tests in CI.
+    - Reliable.
+- Interchaintest is used by many core teams, and top cosmwasm projects.
+    - IBC team, Strangelove, Osmosis, DAODAO, TODO
+- Intterchaintest's development is funded by the ICF.
 
 ## Scope
 
