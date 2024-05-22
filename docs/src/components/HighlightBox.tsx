@@ -96,9 +96,9 @@ const gradientStyles = ({ color1, color2 }) => ({
   // alignItems: "center",
   justifyContent: "start",
   marginBottom: 20,
-  fontSize: 21,
+  fontSize: 18,
   // flexWrap: "wrap",
-  // flexDirection: "column",
+  flexDirection: "column",
 });
 
 function HighlightBox({ type, title, children }) {
@@ -132,6 +132,7 @@ function HighlightBox({ type, title, children }) {
   });
 
   return (
+    // TODO: fix linter error here
     <div style={gradientStyles(styles)} className="highlightBox">
       <style>
         {`
@@ -140,7 +141,7 @@ function HighlightBox({ type, title, children }) {
           }
         `}
       </style>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "10px", marginTop: "10px" }}>
         <div style={iconStyles}>{styles.icon}</div>
         <h3 style={titleStyle}>{title}</h3>
       </div>
