@@ -19,6 +19,8 @@ In this section, you can find all you need to install:
 - [Go v1.22.3](https://go.dev/)
 - [go-codegen v0.2.2](https://github.com/srdtrk/go-codegen)
 - [Docker](https://www.docker.com/)
+- [Rust and Cargo](https://www.rust-lang.org/)
+- [just](https://just.systems/) (optional)
 
 </HighlightBox>
 
@@ -65,3 +67,37 @@ Install Docker following the instructions on the [Docker documentation](https://
 ```bash
 docker --version
 ```
+
+## Rust and Cargo
+
+Install Rust and Cargo following the instructions on the [Rust book](https://doc.rust-lang.org/book/ch01-01-installation.html). Test if Rust is installed by running the following commands:
+
+```bash
+cargo --version
+```
+
+## just
+
+<HighlightBox type="info" title="Just">
+
+[Just](https://just.systems/) is a handy `make` alternative written in Rust. It is optional but recommended for this tutorial. Instead of writing a `Makefile`, you can write a `justfile` to automate your tasks.
+
+</HighlightBox>
+
+Install just following the instructions on the [just manual](https://just.systems/man/en/chapter_4.html) or by using the command below.
+
+```bash
+cargo install just
+```
+
+Test if just is installed by running the following command:
+
+```bash
+just --version
+```
+
+<HighlightBox type="tip" title="Just">
+
+If you don't want to install `just`, you can simply run the commands in the `justfile` manually.
+
+</HighlightBox>

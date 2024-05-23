@@ -67,7 +67,6 @@ This tutorial will cover spinning up a local testing environment with interchain
 In this tutorial, you will:
 
 - Compile a CosmWasm contract into wasm and generate its JSON schema
-- Generate its message types using go-codegen. (Optional)
 - Scaffold an end-to-end testsuite with github actions consisting of two chains using go-codegen.
 - Add our contract to the testsuite using go-codegen.
 - Create a transfer channel between the two chains.
