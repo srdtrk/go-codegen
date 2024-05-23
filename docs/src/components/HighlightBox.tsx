@@ -132,11 +132,11 @@ function HighlightBox({ type, title, children }) {
 
   return (
     // TODO: fix linter error here
-    <div style={gradientStyles(styles)} className="highlightBox">
+    <div style={gradientStyles(styles)} className="highlightBox" id={type}>
       <style>
         {`
-          .highlightBox a {
-            color: ${styles.darkMode ? "blue" : "#85c1e9"} !important;
+          #${type} a {
+            color: ${styles.darkMode ? "#85c1e9" : "blue"} !important;
           }
         `}
       </style>

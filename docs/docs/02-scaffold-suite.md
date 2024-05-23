@@ -20,6 +20,12 @@ git clone https://github.com/srdtrk/awesomwasm-2024-workshop
 cd awesomwasm-2024-workshop
 ```
 
+Now, create and checkout a new branch for the tutorial:
+
+```sh
+git checkout -b tutorial
+```
+
 You may take a look at the repository to familiarize yourself, but we will not be making any changes to the contract code in this tutorial.
 
 Note that this contract contains one main contract and two testing contracts in the `testing` directory. We will be using all three contracts in our test suite.
