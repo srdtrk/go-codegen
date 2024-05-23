@@ -1,17 +1,15 @@
 ---
-title: Scaffold a Test Suite with go-codegen
-sidebar_label: Scaffold a Test Suite with go-codegen
+title: Setup the Example Contract Repository
+sidebar_label: Setup the Example Contract Repository
 sidebar_position: 2
-slug: /scaffold-suite
+slug: /example-repo
 ---
 
-import CodeBlock from '@theme/CodeBlock';
+import HighlightBox from '@site/src/components/HighlightBox';
 
-# Scaffold a Test Suite with go-codegen
+# Clone the Example Contract Repository
 
 In this tutorial, we will be creating a test suite for an example CosmWasm contract using go-codegen. We first need to clone the repository containing the example contract.
-
-## Clone the Example Contract Repository
 
 You may also fork the repository to your GitHub account and clone it from there. This will allow you to push changes to your forked repository and test github actions in your forked repository.
 
@@ -28,7 +26,11 @@ git checkout -b tutorial
 
 You may take a look at the repository to familiarize yourself, but we will not be making any changes to the contract code in this tutorial.
 
-Note that this contract contains one main contract and two testing contracts in the `testing` directory. We will be using all three contracts in our test suite.
+<HighlightBox type="note" title="Note">
+
+This contract contains one main contract and two testing contracts in the `testing` directory. We will be using all three contracts in our test suite.
+
+</HighlightBox>
 
 ### Build the Contracts
 
@@ -49,3 +51,25 @@ To use go-codegen, we need to generate the CosmWasm schema for the contracts. We
 ```sh
 just generate-schemas
 ```
+
+<HighlightBox type="tip" title="Exploration (Optional)">
+
+At this point, you may explore go-codegen by running generate commands. For example:
+
+```sh
+go-codegen generate messages schema/cw-ica-controller.json
+```
+
+And you can explore the generated `msgs.go` file in the root directory. Then remove it:
+
+```sh
+rm msgs.go
+```
+
+</HighlightBox>
+
+<HighlightBox type="note" title="Note">
+
+Build and schema artifacts are not committed to the repository due to `.gitignore` settings.
+
+</HighlightBox>
