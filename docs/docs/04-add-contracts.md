@@ -93,7 +93,7 @@ go test -v . -run=TestWithContractTestSuite/TestContract
 
 </HighlightBox>
 
-<HighlightBox type="warn" title="Warning">
+<HighlightBox type="warn" title="Github Actions">
 
 Github Actions will not run the test in the generated `contract_test.go` file. To do this, you need to add the test to the `.github/workflows/e2e.yml` file. Moreover, when running the generated test in Github Actions, you will need to build all the contracts before running the test.
 

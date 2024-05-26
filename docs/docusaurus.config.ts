@@ -84,11 +84,6 @@ const config: Config = {
           label: 'Tutorial',
         },
         {
-          type: "docsVersionDropdown",
-          position: "right",
-          dropdownActiveClassDisabled: true,
-        },
-        {
           href: 'https://github.com/srdtrk/go-codegen',
           label: 'GitHub',
           position: 'right',

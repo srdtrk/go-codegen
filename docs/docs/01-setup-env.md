@@ -7,7 +7,7 @@ slug: /setup-env
 
 import HighlightBox from '@site/src/components/HighlightBox';
 
-# Set up your work environment
+# Set Up Your Work Environment
 
 On this page, you can find helpful links to set up your work environment.
 
