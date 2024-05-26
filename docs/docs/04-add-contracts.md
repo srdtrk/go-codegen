@@ -92,3 +92,60 @@ go test -v . -run=TestWithContractTestSuite/TestContract
 ```
 
 </HighlightBox>
+
+<HighlightBox type="warn" title="Warning">
+
+Github Actions will not run the test in the generated `contract_test.go` file. To do this, you need to add the test to the `.github/workflows/e2e.yml` file. Moreover, when running the generated test in Github Actions, you will need to build all the contracts before running the test.
+
+```yaml title=".github/workflows/e2e.yml"
+# ...
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          # List your tests here
+          - TestWithBasicTestSuite/TestBasic
+          # plus-diff-line
++         - TestWithContractTestSuite/TestContract
+    name: ${{ matrix.test }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      // minus-diff-start
+-     # You can build your contract here, you can either use docker or a custom cargo script:
+-     # We've provided examples for both below:
+-     # 
+-     # - name: Build Contracts with Docker
+-     #   run: |
+-     #     docker run --rm -v "$(pwd)":/code \
+-     #     --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+-     #     --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+-     #     cosmwasm/optimizer:0.15.1
+-     # - name: Install cargo-run-script
+-     #   uses: actions-rs/cargo@v1
+-     #   with:
+-     #     command: install
+-     #     args: cargo-run-script
+-     # - name: Build Optimized Contract
+-     #   uses: actions-rs/cargo@v1
+-     #   with:
+-     #     command: run-script
+-     #     args: optimize
+      // minus-diff-end
+      // plus-diff-start
++     - name: Install just
++       uses: extractions/setup-just@v2
++     - name: Build Test Contracts with Docker
++       run: just build-test-contracts
++     - name: Build Optimized Contract
++       run: just build-optimize
+      // plus-diff-end
+      - name: Setup Go
+        uses: actions/setup-go@v4
+# ...
+```
+
+</HighlightBox>
+

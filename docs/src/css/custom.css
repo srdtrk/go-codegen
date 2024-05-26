@@ -21,7 +21,8 @@
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  background-color: #080808; /* Light grey color */
+  background-color: #080808;
+  /* Light grey color */
   --ifm-color-primary: #4193c4;
   --ifm-color-primary-dark: #21af90;
   --ifm-color-primary-darker: #1fa588;
@@ -35,5 +36,21 @@
     background-color: #121212;
     border-bottom: 1px solid #303030;
   }
-}
 
+  /* CODE BLOCK */
+  .code-block-minus-diff-line {
+    background-color: #ff000020;
+    display: block;
+    margin: 0 calc(-1 * var(--ifm-pre-padding));
+    padding: 0 var(--ifm-pre-padding);
+    border-left: 3px solid #ff000080;
+  }
+
+  .code-block-plus-diff-line {
+    background-color: #00ff0020;
+    display: block;
+    margin: 0 calc(-1 * var(--ifm-pre-padding));
+    padding: 0 var(--ifm-pre-padding);
+    border-left: 3px solid #00ff0080;
+  }
+}
