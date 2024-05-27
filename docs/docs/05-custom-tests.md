@@ -1,0 +1,146 @@
+---
+title: Custom Tests
+sidebar_label: Custom Tests
+sidebar_position: 5
+slug: /custom-tests
+---
+
+import HighlightBox from '@site/src/components/HighlightBox';
+
+# Custom Tests
+
+In this section, I will give you a test for the `cw-ica-controller` contract. This test demonstrates how to create a new interchain account, fund it, and then stake some tokens with it. And then we will go over this test file line by line to understand the logic behind it.
+
+Replace the contents of `e2e/interchaintestv8/contract_test.go` with the following code:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go
+```
+
+You need to run `go mod tidy` to update the indirect dependencies.
+
+```sh
+go mod tidy
+```
+
+## Organization
+
+The tests are organized into subtests using the `s.Run` method. This method takes a test name and a test function as arguments. The test function is executed when the test is run.
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L55
+```
+
+<HighlightBox type="best-practice" title="Best Practice: Using `s.Run`">
+
+Using the `s.Run` method to organize your tests into subtests makes it easier to understand the purpose of each test and helps you to identify the failing test quickly.
+
+Notice that each `s.Run` call is also wrapped by a `s.Require().True` call. This is because without this, sequential subtests will be executed even if the previous subtest fails. You may abstain from doing this if you want to run the subtests even if one of them fails.
+
+</HighlightBox>
+
+## Test Logic
+
+We will do a line-by-line analysis of the test logic.
+
+We first call the underlying test suite's setup method. This is where the chains, relayers, connections, and accounts are initialized.
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L45
+```
+
+### UploadAndInstantiateContracts Subtest
+
+Since contract upload and instantiation logic is inside `s.Run`, we define variables for the instantiated contracts outside of the `s.Run` method to use them in the subsequent subtests.
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L49-L54
+```
+
+<HighlightBox type="best-practice" title="Best Practice: Storing Instantiated Contracts">
+
+Although here we are storing the instantiated contracts in variables, it is advisable to store them in the `ContractTestSuite` struct to make them accessible to all test functions. It might also be helpful to move contract upload and instantiation logic to the `ContractTestSuite`'s `SetupTest` method.
+
+This is what is done in the `cw-ica-controller`'s actual test suite. There are a lot of test functions there, which is also a good reference for writing custom tests.
+
+```go reference
+https://github.com/srdtrk/cw-ica-controller/blob/d6b033092071e37f2dd015b58810a02257a92b6b/e2e/interchaintestv8/contract_test.go#L34-L46
+```
+
+</HighlightBox>
+
+Then we open a subtest to upload and instantiate both the `cw-ica-controller` and `callback-counter` contracts. We first upload the `callback-counter` contract:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L57
+```
+
+Then we instantiate the `callback-counter` contract:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L60
+```
+
+Notice that the `callback-counter` takes no arguments in its instantiation.
+
+Then we upload and instantiate the `cw-ica-controller` contract:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L64-L80
+```
+
+<HighlightBox type="remember" title="Channel Open Init on Instantiate">
+
+Recall that the `cw-ica-controller` initiates the channel opening handshake upon its instantiation. This is why we wait for 5 blocks after the instantiation to ensure that the handshake is completed.
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L83
+```
+
+</HighlightBox>
+
+### Verify_ChannelOpenHandshake Subtest
+
+The next subtest is a set of assertions to ensure that the interchain account was created successfully:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L87-L108
+```
+
+<HighlightBox type="best-practice" title="Best Practice: gRPC Query Client">
+
+Notice the use of the autogenerated query client for both the `cw-ica-controller` and `callback-counter` contracts. This is the recommended way to query the contracts although you can also use the `.Query` method on the contract instance.
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L89
+```
+
+</HighlightBox>
+
+### Test_CosmosMsg_Delegate Subtest
+
+In the next subtest, we fund the interchain account and stake some tokens with it. We fund the interchain account using the `s.FundAddressChainB` method, which can be found in [`e2e/interchaintestv8/e2esuite/utils.go`](https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/e2esuite/utils.go).
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L111-L117
+```
+
+Next, we construct the execute message to stake tokens with the interchain account:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L118-L139
+```
+
+Then we use the `contract.Execute` method to execute the message, and we wait for 5 blocks to ensure that the IBC packet lifecycle is completed:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L141-L146
+```
+
+The rest of the subtest is a set of assertions to ensure that the delegation was successful:
+
+```go reference
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L147-L165
+```
+
+Thank you for reading this tutorial. I hope you found it helpful.
