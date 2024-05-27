@@ -142,3 +142,5 @@ The rest of the subtest is a set of assertions to ensure that the delegation was
 ```go reference
 https://github.com/srdtrk/awesomwasm-2024-workshop/blob/bbd0b9de946bc8a0680398e2dccf11e220c8c1d8/e2e/interchaintestv8/contract_test.go#L147-L165
 ```
+
+Thank you for reading this tutorial. I hope you found it helpful.
