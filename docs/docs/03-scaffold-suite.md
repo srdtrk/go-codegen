@@ -14,10 +14,9 @@ In go-codegen, a test suite is a go project that contains test cases for an appl
 
 To scaffold the test suite, run the following command:
 
-<!-- TODO: Link https://github.com/srdtrk/awesomwasm-2024-workshop/commit/aaf977f390960514702f81c3c88a8754f26c57f5 -->
-```sh
-go-codegen interchaintest scaffold
-```
+<CodeBlock source="https://github.com/srdtrk/awesomwasm-2024-workshop/commit/aaf977f390960514702f81c3c88a8754f26c57f5">
+    {`go-codegen interchaintest scaffold`}
+</CodeBlock>
 
 This command will open an interactive prompt that will guide you through the process of creating a test suite. The prompt will ask you to provide the following information:
 
