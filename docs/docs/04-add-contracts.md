@@ -6,6 +6,7 @@ slug: /add-contracts
 ---
 
 import HighlightBox from '@site/src/components/HighlightBox';
+import CodeBlock from '@theme/CodeBlock';
 
 # Add Contracts to the Test Suite
 
@@ -25,16 +26,14 @@ There are a couple important things to note about this contract:
 
 - Since this contract was designed to be instantiated by other contracts, it does have the capability to make callbacks to an external contract on channel and packet lifecycle events. This is what the `callback-counter` test contract is for.
 
-<!-- TODO: replace link with workshop repo -->
 ```rust reference
-https://github.com/srdtrk/cw-ica-controller/blob/d6b033092071e37f2dd015b58810a02257a92b6b/src/types/callbacks.rs#L15-L46
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/90ab7f61c743ec26c22fe3a1f3b8fac140a19a39/src/types/callbacks.rs#L15-L46
 ```
 
 - This contract automatically initiates the channel opening handshake when it is instantiated and doesn't allow any relayers to initiate the handshake.
 
-<!-- TODO: replace link with workshop repo -->
 ```rust reference
-https://github.com/srdtrk/cw-ica-controller/blob/d6b033092071e37f2dd015b58810a02257a92b6b/src/types/msg.rs#L8-L21
+https://github.com/srdtrk/awesomwasm-2024-workshop/blob/90ab7f61c743ec26c22fe3a1f3b8fac140a19a39/src/types/msg.rs#L8-L21
 ```
 
 </HighlightBox>
@@ -43,10 +42,9 @@ https://github.com/srdtrk/cw-ica-controller/blob/d6b033092071e37f2dd015b58810a02
 
 In this test, we will only add the `cw-ica-controller` and `callback-counter` contracts to the test suite. To add the `cw-ica-controller` contract to the test suite, run the following command from the root of the workshop repository:
 
-<!-- TODO: link commit -->
-```sh
-go-codegen interchaintest add-contract schema/cw-ica-controller.json --suite-dir e2e/interchaintestv8
-```
+<CodeBlock source="https://github.com/srdtrk/awesomwasm-2024-workshop/commit/ae4521ffe08ee1b47dc10a462a85f92950dbe37b">
+{`go-codegen interchaintest add-contract schema/cw-ica-controller.json --suite-dir e2e/interchaintestv8`}
+</CodeBlock>
 
 This command will generate the following files:
 
@@ -64,10 +62,9 @@ e2e/interchaintestv8/
 
 You can also add the `callback-counter` contract to the test suite by running the following command:
 
-<!-- TODO: link commit -->
-```sh
-go-codegen interchaintest add-contract testing/contracts/callback-counter/schema/callback-counter.json --suite-dir e2e/interchaintestv8
-```
+<CodeBlock source="https://github.com/srdtrk/awesomwasm-2024-workshop/commit/38f6c88e2f5fde99153a048a9a709bb9c0eaac85">
+  {`go-codegen interchaintest add-contract testing/contracts/callback-counter/schema/callback-counter.json --suite-dir e2e/interchaintestv8`}
+</CodeBlock>
 
 This command will generate the following files:
 
@@ -97,8 +94,8 @@ go test -v . -run=TestWithContractTestSuite/TestContract
 
 Github Actions will not run the test in the generated `contract_test.go` file. To do this, you need to add the test to the `.github/workflows/e2e.yml` file. Moreover, when running the generated test in Github Actions, you will need to build all the contracts before running the test.
 
-```yaml title=".github/workflows/e2e.yml"
-# ...
+<CodeBlock language="yaml" source="https://github.com/srdtrk/awesomwasm-2024-workshop/commit/4344baaa0ffa926e5f97b4da46f880b7d6a8a230">
+{`# ...
   build:
     strategy:
       fail-fast: false
@@ -108,7 +105,7 @@ Github Actions will not run the test in the generated `contract_test.go` file. T
           - TestWithBasicTestSuite/TestBasic
           # plus-diff-line
 +         - TestWithContractTestSuite/TestContract
-    name: ${{ matrix.test }}
+    name: \${{ matrix.test }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -144,8 +141,9 @@ Github Actions will not run the test in the generated `contract_test.go` file. T
       // plus-diff-end
       - name: Setup Go
         uses: actions/setup-go@v4
-# ...
-```
+\# ...
+`}
+</CodeBlock>
 
 </HighlightBox>
 
