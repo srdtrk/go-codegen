@@ -158,18 +158,6 @@ const config: Config = {
     },
   } satisfies Preset.ThemeConfig,
   plugins: [
-    [
-      "@docusaurus/plugin-client-redirects",
-      {
-        // makes the default page next in production
-        redirects: [
-          {
-            from: ["/", "/master", "/next", "/docs"],
-            to: "/main",
-          },
-        ],
-      },
-    ],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async function myPlugin(context, options) {
       return {
