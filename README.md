@@ -24,6 +24,8 @@ The quickest way to generate Go code for your CosmWasm smart contracts. Currentl
 - A gRPC query client
 - An [`interchaintest`](https://github.com/strangelove-ventures/interchaintest) based test suite
 
+**You can find a tutorial on how to use this tool's interchaintest feature [here](https://srdtrk.github.io/go-codegen/).**
+
 ## Usage
 
 In order to generate Go code for your CosmWasm smart contract, you need to have its full API exported as a JSON file
