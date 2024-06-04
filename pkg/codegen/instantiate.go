@@ -73,5 +73,4 @@ func generateStructOrEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTit
 	} else {
 		generateEnumMsg(f, schema, []string{allowedTitle, allowedTitle + "_for_Empty"})
 	}
-
 }
