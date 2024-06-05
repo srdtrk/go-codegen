@@ -173,6 +173,10 @@ func generateDefinitionType(f *jen.File, name string, schema *schemas.JSONSchema
 
 	switch schema.Type[0] {
 	case schemas.TypeNameString:
+		if name == "string" {
+			// Skip the string definition
+			return nil
+		}
 		f.Type().Id(name).String()
 		if schema.Enum != nil {
 			err := generateEnumString(f, name, schema.Enum)
