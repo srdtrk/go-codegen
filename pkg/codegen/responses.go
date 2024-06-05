@@ -32,11 +32,14 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 
 				RegisterDefinition(schema.Title, schema)
 			case schemas.TypeNameArray:
-				if len(schema.Definitions) == 0 {
-					types.DefaultLogger().Error().Msgf("response schema for %s must have a definition for array, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
+				title := key
+				if schema.Title != "" {
+					title = schema.Title
+				} else {
+					types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen/issues", key)
 				}
 
-				RegisterDefinition(key, schema)
+				RegisterDefinition(title, schema)
 			case schemas.TypeNameString:
 				// Do nothing
 			case schemas.TypeNameNumber:
