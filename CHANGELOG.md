@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.3 (2024-06-05)
+
+- Removed custom gas from StoreCode in auto-generated test suite [#67](https://github.com/srdtrk/go-codegen/issues/67)
+- Allow migrate messages to be enums. [#74](https://github.com/srdtrk/go-codegen/pull/74)
+- Fixed a problem with generating messages in `dao-dao-core`. [#75](https://github.com/srdtrk/go-codegen/issues/75)
+
 ## v0.2.2 (2024-05-20)
 
 - Fixed issue [#61](https://github.com/srdtrk/go-codegen/issues/61)
