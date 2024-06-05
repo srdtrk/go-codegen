@@ -91,6 +91,7 @@ func (s *MySuite) TestMessageComposer() {
 	s.GenerateMessageTypesTest("testdata/cw721-base.json")
 	s.GenerateMessageTypesTest("testdata/cw2981-royalties.json")
 	s.GenerateMessageTypesTest("testdata/ics721.json")
+	s.GenerateMessageTypesTest("testdata/dao-dao-core.json")
 }
 
 func (s *MySuite) TestQueryClient() {
@@ -102,6 +103,7 @@ func (s *MySuite) TestQueryClient() {
 	s.GenerateQueryClientTest("testdata/cw721-base.json")
 	s.GenerateQueryClientTest("testdata/cw2981-royalties.json")
 	s.GenerateQueryClientTest("testdata/ics721.json")
+	s.GenerateMessageTypesTest("testdata/dao-dao-core.json")
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {
