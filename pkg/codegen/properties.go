@@ -181,6 +181,8 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 					typeStr += "_and_"
 				}
 			}
+
+			RegisterDefinition(typeStr, schema)
 		default:
 			return "", fmt.Errorf("unsupported array definition %s", name)
 		}

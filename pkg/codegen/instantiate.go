@@ -67,10 +67,15 @@ func generateStructOrEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTit
 		panic(fmt.Errorf("schema of %s is nil", allowedTitle))
 	}
 
-	err := validateAsStructMsg(schema, allowedTitle)
-	if err == nil {
+	if err := validateAsStructMsg(schema, allowedTitle); err == nil {
 		generateStructMsg(f, schema, allowedTitle)
-	} else {
-		generateEnumMsg(f, schema, []string{allowedTitle, allowedTitle + "_for_Empty"})
+		return
 	}
+
+	if err := validateAsEnumMsg(schema, []string{allowedTitle, allowedTitle + "_for_Empty"}); err == nil {
+		generateEnumMsg(f, schema, []string{allowedTitle, allowedTitle + "_for_Empty"})
+		return
+	}
+
+	panic(fmt.Errorf("%s schema is neither a struct nor an enum", allowedTitle))
 }
