@@ -61,6 +61,9 @@ func validateAsEnumMsg(schema *schemas.JSONSchema, allowedTitles []string) error
 	if !slices.Contains(allowedTitles, schema.Title) {
 		return fmt.Errorf("title %s is not one of %s", schema.Title, allowedTitles)
 	}
+	if len(schema.OneOf) == 0 {
+		types.DefaultLogger().Warn().Msg(fmt.Sprintf("%s is an empty enum", schema.Title))
+	}
 
 	return nil
 }
