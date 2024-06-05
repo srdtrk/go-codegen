@@ -24,7 +24,8 @@ func GenerateMigrateMsg(f *jen.File, schema *schemas.JSONSchema) {
 		return
 	}
 
-	generateStructMsg(f, schema, "MigrateMsg")
+	// MigrateMsg can be either a struct or an enum
+	generateStructOrEnumMsg(f, schema, "MigrateMsg")
 }
 
 func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle string) {
@@ -46,11 +47,30 @@ func generateStructMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle str
 
 func validateAsStructMsg(schema *schemas.JSONSchema, allowedTitle string) error {
 	if schema.Title != allowedTitle {
-		return fmt.Errorf("title must be InstantiateMsg")
+		return fmt.Errorf("title must be %v", allowedTitle)
 	}
+
+	if schema.Type == nil {
+		return fmt.Errorf("%v type must be defined", allowedTitle)
+	}
+
 	if schema.Type[0] != "object" {
-		return fmt.Errorf("InstantiateMsg type must be object")
+		return fmt.Errorf("%v type must be object", allowedTitle)
 	}
 
 	return nil
+}
+
+// Generate the msg regardless if it is a struct or enum this is mostly needed for migration msgs
+func generateStructOrEnumMsg(f *jen.File, schema *schemas.JSONSchema, allowedTitle string) {
+	if schema == nil {
+		panic(fmt.Errorf("schema of %s is nil", allowedTitle))
+	}
+
+	err := validateAsStructMsg(schema, allowedTitle)
+	if err == nil {
+		generateStructMsg(f, schema, allowedTitle)
+	} else {
+		generateEnumMsg(f, schema, []string{allowedTitle, allowedTitle + "_for_Empty"})
+	}
 }
