@@ -12,6 +12,13 @@ import (
 
 func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 	for key, schema := range responses {
+		title := key
+		if schema.Title != "" {
+			title = schema.Title
+		} else {
+			types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen", key)
+		}
+
 		RegisterDefinitions(schema.Definitions)
 		switch {
 		case len(schema.Type) == 1:
@@ -32,10 +39,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 
 				RegisterDefinition(schema.Title, schema)
 			case schemas.TypeNameArray:
-				title := key
-				if schema.Title != "" {
-					title = schema.Title
-				} else {
+				if schema.Title == "" {
 					types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen/issues", key)
 				}
 
@@ -47,7 +51,7 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 			case schemas.TypeNameInteger:
 				// Do nothing
 			case schemas.TypeNameBoolean:
-			// Do nothing
+				// Do nothing
 			case schemas.TypeNameNull:
 				types.DefaultLogger().Warn().Msgf("response schema for %s is of type null", key)
 			default:
@@ -67,13 +71,26 @@ func GenerateResponses(f *jen.File, responses map[string]*schemas.JSONSchema) {
 				types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
 			}
 		case len(schema.OneOf) != 0:
-			RegisterDefinition(key, schema)
+			if schema.Title == "" {
+				types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen", key)
+			}
+
+			RegisterDefinition(title, schema)
 		case len(schema.AllOf) == 1:
-			RegisterDefinition(key, schema)
+			if schema.Title == "" {
+				types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen", key)
+			}
+			RegisterDefinition(title, schema)
 		case schema.Ref != nil:
-			RegisterDefinition(key, schema)
+			if schema.Title == "" {
+				types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen", key)
+			}
+			RegisterDefinition(title, schema)
 		case len(schema.AnyOf) != 0:
-			RegisterDefinition(key, schema)
+			if schema.Title == "" {
+				types.DefaultLogger().Warn().Msgf("response schema for %s should have a title, please report this issue in https://github.com/srdtrk/go-codegen", key)
+			}
+			RegisterDefinition(title, schema)
 			RegisterDefinitions(schema.Definitions)
 		default:
 			types.DefaultLogger().Error().Msgf("response schema for %s is not supported, skipping... Please create an issue in https://github.com/srdtrk/go-codegen", key)
