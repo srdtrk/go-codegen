@@ -130,7 +130,7 @@ func AddContract(schemaPath, suiteDir, contractName string) error {
 		}
 
 		relPackageDir := filepath.Join(relContractsDir, packageName)
-		contractTestGenerators, err := getContractTestGenerators(relPackageDir, goMod.Module.Mod.Path)
+		contractTestGenerators, err := getContractTestGenerators(relPackageDir, goMod.Module.Mod.Path, packageName)
 		if err != nil {
 			return err
 		}
