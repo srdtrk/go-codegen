@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Removed `GetModuleAddress` helper function from the generated test suite [#88](https://github.com/srdtrk/go-codegen/issues/88)
+
 ## v0.2.4 (2024-06-07)
 
 - Fixed the geenration of some incorrectly formated query responses [#79](https://github.com/srdtrk/go-codegen/pull/79)
