@@ -101,6 +101,8 @@ func AddContract(schemaPath, suiteDir, contractName string) error {
 	if err != nil {
 		return err
 	}
+	_, err = os.Stat(filepath.Join(suiteDir, "contract_test.go"))
+	notFoundContractTestDir := os.IsNotExist(err)
 
 	nonAlphanumericRegex := regexp.MustCompile(`[^a-zA-Z0-9 ]+`)
 	packageName := nonAlphanumericRegex.ReplaceAllString(contractName, "")
@@ -119,7 +121,7 @@ func AddContract(schemaPath, suiteDir, contractName string) error {
 		return err
 	}
 
-	if !foundContractTest {
+	if !foundContractTest && notFoundContractTestDir {
 		types.DefaultLogger().Info().Msg("No contract test suite found. Generating...")
 
 		contractTestRunner := xgenny.NewRunner(ctx, suiteDir)
