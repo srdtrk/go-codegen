@@ -99,13 +99,14 @@ func getContractGenerators(idlSchema *schemas.IDLSchema, packageName, modulePath
 	return generators, nil
 }
 
-func getContractTestGenerators(relPackageDir, modulePath string) ([]*genny.Generator, error) {
+func getContractTestGenerators(relPackageDir, modulePath, packageName string) ([]*genny.Generator, error) {
 	var generators []*genny.Generator
 
 	// contract test generator
 	ctg, err := interchaintestv8.NewGeneratorForContractTest(&interchaintestv8.ContractTestOptions{
 		ModulePath:    modulePath,
 		RelPackageDir: relPackageDir,
+		PackageName:   packageName,
 	})
 	if err != nil {
 		return nil, err
