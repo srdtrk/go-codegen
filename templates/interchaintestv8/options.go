@@ -17,6 +17,7 @@ type Options struct {
 type ContractTestOptions struct {
 	ModulePath    string
 	RelPackageDir string
+	PackageName   string
 }
 
 // Validate that Options is usable.
@@ -60,5 +61,6 @@ func (opts *ContractTestOptions) plushContext() *plush.Context {
 	ctx := plush.NewContext()
 	ctx.Set("ModulePath", opts.ModulePath)
 	ctx.Set("RelPackageDir", opts.RelPackageDir)
+	ctx.Set("PackageName", opts.PackageName)
 	return ctx
 }

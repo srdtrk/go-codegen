@@ -38,7 +38,7 @@ func (s *ContractTestSuite) TestContract() {
 
 	// Add your test code here. For example, upload and instantiate a contract:
 	// This boilerplate may be moved to SetupSuite if it is common to all tests.
-	var contract *cwicacontroller.Contract
+	var contract *<%= PackageName %>.Contract
 	s.Run("UploadAndInstantiateContract", func() {
 		// Upload the contract code to the chain.
 		codeID, err := wasmd1.StoreContract(ctx, s.UserA.KeyName(), "./relative/path/to/your_contract.wasm")
@@ -46,7 +46,7 @@ func (s *ContractTestSuite) TestContract() {
 
 		// Instantiate the contract using contract helpers.
 		// This will an error if the instantiate message is invalid.
-		contract, err = cwicacontroller.Instantiate(ctx, s.UserA.KeyName(), codeID, "", wasmd1, cwicacontroller.InstantiateMsg{})
+		contract, err = <%= PackageName %>.Instantiate(ctx, s.UserA.KeyName(), codeID, "", wasmd1, <%= PackageName %>.InstantiateMsg{})
 		s.Require().NoError(err)
 
 		s.Require().NotEmpty(contract.Address)
