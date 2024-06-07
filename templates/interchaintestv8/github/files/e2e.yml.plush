@@ -20,12 +20,12 @@ jobs:
     steps:
       - uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
       - uses: actions/checkout@v3
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3.7.0
         with:
-          version: v1.54
+          version: v1.59
           args: --timeout 5m
           working-directory: <%= TestDir %>
   build:
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.22"
           check-latest: true
           cache-dependency-path: |
              <%= TestDir %>/go.sum
