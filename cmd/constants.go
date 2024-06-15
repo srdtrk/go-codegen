@@ -7,6 +7,7 @@ const (
 	YesFlag          = "yes"
 	SuiteDirFlag     = "suite-dir"
 	ContractNameFlag = "contract-name"
+	PackageFlag      = "package"
 	MessagesOnlyFlag = "messages-only"
 
 	DebugFlag = "debug"
