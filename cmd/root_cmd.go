@@ -298,6 +298,12 @@ func ictestAddContract() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if packageName == "" {
+				packageName, err = cmd.Flags().GetString(PackageNameFlag)
+				if err != nil {
+					return err
+				}
+			}
 
 			err = interchaintest.AddContract(args[0], suiteDir, packageName)
 			if err != nil {
@@ -311,6 +317,11 @@ func ictestAddContract() *cobra.Command {
 
 	cmd.Flags().String(SuiteDirFlag, ".", "Path to the test suite directory. If not provided, the current working directory will be used.")
 	cmd.Flags().String(ContractNameFlag, "", "Name of the contract to be added to the test suite. If not provided, the contract name will be inferred from the schema file.")
+	err := cmd.Flags().MarkDeprecated(ContractNameFlag, "please use --package-name instead")
+	if err != nil {
+		panic(err)
+	}
+	cmd.Flags().StringP(PackageNameFlag, "p", "", "Package name for the generated contract code. If not provided, the contract name will be inferred from the schema file.")
 
 	return cmd
 }
