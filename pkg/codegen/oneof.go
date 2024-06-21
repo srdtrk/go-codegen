@@ -14,18 +14,19 @@ func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 	fields := []jen.Code{}
 	for _, schema := range oneOf {
 		name := schema.Title
-		if schema.Title == "" {
-			if len(schema.Properties) != 1 {
-				panic(fmt.Errorf("cannot determine the name of the field %v", schema))
-			}
 
-			for k, prop := range schema.Properties {
+		if schema.Title == "" && len(schema.Properties) != 1 {
+			panic(fmt.Errorf("cannot determine the name of the field %v", schema))
+		}
+
+		for k, prop := range schema.Properties {
+			if schema.Title == "" {
 				name = k
-
-				typeName := typePrefix + strcase.ToCamel(k)
-
-				RegisterDefinition(typeName, prop)
 			}
+
+			typeName := typePrefix + strcase.ToCamel(k)
+
+			RegisterDefinition(typeName, prop)
 		}
 
 		RegisterDefinitions(schema.Definitions)
