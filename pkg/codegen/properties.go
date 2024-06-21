@@ -18,16 +18,17 @@ func generateFieldsFromProperties(props map[string]*schemas.JSONSchema, useTags 
 		// add comment
 		fields = append(fields, jen.Comment(schema.Description))
 		// add field
-		fields = append(fields, generateFieldFromSchema(name, schema, nil, "", useTags))
+		fields = append(fields, generateFieldFromSchema(name, name, schema, nil, "", useTags))
 	}
 	return fields
 }
 
-func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *bool, typePrefix string, useTags bool) jen.Code {
-	if name == "" {
-		name = schema.Title
+func generateFieldFromSchema(name, jsonKey string, schema *schemas.JSONSchema, required *bool, typePrefix string, useTags bool) jen.Code {
+	if name == "" || jsonKey == "" {
+		panic(fmt.Errorf("cannot determine the name of the field for schema %v", schema))
 	}
 	pascalName := strcase.ToCamel(name)
+	snakeName := strcase.ToSnake(jsonKey)
 
 	typeStr, err := getType(pascalName, schema, required, typePrefix, true)
 	if err != nil {
@@ -37,9 +38,9 @@ func generateFieldFromSchema(name string, schema *schemas.JSONSchema, required *
 	if useTags {
 		tags := map[string]string{}
 		if strings.HasPrefix(typeStr, "*") {
-			tags["json"] = name + ",omitempty"
+			tags["json"] = snakeName + ",omitempty"
 		} else {
-			tags["json"] = name
+			tags["json"] = snakeName
 		}
 
 		return jen.Id(pascalName).Op(typeStr).Tag(tags)
