@@ -2,7 +2,12 @@
 
 ## [Unreleased]
 
+## v0.2.5 (2024-06-22)
+
 - Removed `GetModuleAddress` helper function from the generated test suite [#88](https://github.com/srdtrk/go-codegen/issues/88)
+- Fixed diagnostics upload in the generated test suite [#91](https://github.com/srdtrk/go-codegen/issues/91)
+- Depracated `--contract-name` flag to `--package-name` and `-p` in `interchaintest add-contract` command [#81](https://github.com/srdtrk/go-codegen/issues/81)
+- Fixed the generation of oneOf when a title is set [#92](https://github.com/srdtrk/go-codegen/pull/92)
 
 ## v0.2.4 (2024-06-07)
 
