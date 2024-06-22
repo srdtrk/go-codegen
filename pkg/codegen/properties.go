@@ -28,7 +28,6 @@ func generateFieldFromSchema(name, jsonKey string, schema *schemas.JSONSchema, r
 		panic(fmt.Errorf("cannot determine the name of the field for schema %v", schema))
 	}
 	pascalName := strcase.ToCamel(name)
-	snakeName := strcase.ToSnake(jsonKey)
 
 	typeStr, err := getType(pascalName, schema, required, typePrefix, true)
 	if err != nil {
@@ -38,9 +37,9 @@ func generateFieldFromSchema(name, jsonKey string, schema *schemas.JSONSchema, r
 	if useTags {
 		tags := map[string]string{}
 		if strings.HasPrefix(typeStr, "*") {
-			tags["json"] = snakeName + ",omitempty"
+			tags["json"] = jsonKey + ",omitempty"
 		} else {
-			tags["json"] = snakeName
+			tags["json"] = jsonKey
 		}
 
 		return jen.Id(pascalName).Op(typeStr).Tag(tags)
