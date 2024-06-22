@@ -155,8 +155,8 @@ func generateQueryFunc(queryTitle, queryName string, respSchema *schemas.JSONSch
 		jen.Id("req").Op("*").Id(reqType),
 		jen.Id("opts").Op("...").Qual("google.golang.org/grpc", "CallOption"),
 	).Params(jen.Op("*").Id(respType), jen.Error()).Block(
-		jen.List(jen.Id("rawQueryData"), jen.Err()).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Op("&").Id(queryTitle).Values(jen.Dict{
-			jen.Id(pascalName): jen.Id("req"),
+		jen.List(jen.Id("rawQueryData"), jen.Err()).Op(":=").Qual("encoding/json", "Marshal").Call(jen.Map(jen.String()).Any().Values(jen.Dict{
+			jen.Lit(queryName): jen.Id("req"),
 		})),
 		jen.If(jen.Err().Op("!=").Nil()).Block(
 			jen.Return(jen.Nil(), jen.Err()),
