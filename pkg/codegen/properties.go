@@ -194,6 +194,14 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 			for k := range schema.Properties {
 				typeStr = strcase.ToCamel(k)
 			}
+		case schema.AdditionalProperties.JSONSchema != nil:
+			itemType, err := getType(name, schema.AdditionalProperties.JSONSchema, nil, "", false)
+			if err != nil {
+				return "", err
+			}
+
+			typeStr = "map[string]" + itemType
+			isOptional = false
 		default:
 			return "", fmt.Errorf("cannot determine the type of object %s", name)
 		}

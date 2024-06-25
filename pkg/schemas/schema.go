@@ -15,7 +15,7 @@ type JSONSchema struct {
 	Required             []string               `json:"required,omitempty"`             // Section 5.15.
 	Properties           map[string]*JSONSchema `json:"properties,omitempty"`           // Section 5.16.
 	PatternProperties    map[string]*JSONSchema `json:"patternProperties,omitempty"`    // Section 5.17.
-	AdditionalProperties *bool                  `json:"additionalProperties,omitempty"` // Section 5.18.
+	AdditionalProperties *JSONSchemaOrBool      `json:"additionalProperties,omitempty"` // Section 5.18.
 	Type                 TypeList               `json:"type,omitempty"`                 // Section 5.21.
 	AllOf                []*JSONSchema          `json:"allOf,omitempty"`                // Section 5.22.
 	AnyOf                []*JSONSchema          `json:"anyOf,omitempty"`                // Section 5.23.
@@ -82,4 +82,19 @@ func (t *TypeList) UnmarshalJSON(b []byte) error {
 	}
 
 	return nil
+}
+
+// JSONSchemaOrBool represents a JSONSchema or a boolean value.
+type JSONSchemaOrBool struct {
+	JSONSchema *JSONSchema
+	Bool       *bool
+}
+
+func (t *JSONSchemaOrBool) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &t.Bool); err == nil {
+		return nil
+	}
+	t.Bool = nil
+	return json.Unmarshal(b, &t.JSONSchema)
+
 }
