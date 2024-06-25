@@ -205,6 +205,12 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 
 			typeStr = "map[string]" + itemType
 			isOptional = false
+		case schema.AdditionalProperties.Bool != nil && *schema.AdditionalProperties.Bool:
+			if len(schema.Properties) > 0 {
+				return "", fmt.Errorf("cannot determine the type of object %s: properties and additionalProperties are both defined", name)
+			}
+			typeStr = "map[string]any"
+			isOptional = false
 		default:
 			return "", fmt.Errorf("cannot determine the type of object %s", name)
 		}
