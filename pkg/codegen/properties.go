@@ -195,6 +195,9 @@ func getType(name string, schema *schemas.JSONSchema, required *bool, typePrefix
 				typeStr = strcase.ToCamel(k)
 			}
 		case schema.AdditionalProperties.JSONSchema != nil:
+			if len(schema.Properties) > 0 {
+				return "", fmt.Errorf("cannot determine the type of object %s: properties and additionalProperties are both defined", name)
+			}
 			itemType, err := getType(name, schema.AdditionalProperties.JSONSchema, nil, "", false)
 			if err != nil {
 				return "", err
