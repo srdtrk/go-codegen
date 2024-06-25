@@ -96,5 +96,4 @@ func (t *JSONSchemaOrBool) UnmarshalJSON(b []byte) error {
 	}
 	t.Bool = nil
 	return json.Unmarshal(b, &t.JSONSchema)
-
 }
