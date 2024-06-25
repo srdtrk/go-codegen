@@ -1,0 +1,139 @@
+{
+  "contract_name": "map-test",
+  "contract_version": "0.0.1",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "description": "Instantiate message",
+    "type": "object",
+    "additionalProperties": false
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "description": "Execute messages",
+    "oneOf": [
+      {
+        "title": "Foo",
+        "type": "object",
+        "required": [
+          "foo"
+        ],
+        "properties": {
+          "foo": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "description": "Query messages",
+    "oneOf": [
+      {
+        "title": "MapString",
+        "type": "object",
+        "required": [
+          "map_string"
+        ],
+        "properties": {
+          "map_string": {
+            "type": "object",
+            "required": [
+              "foo"
+            ],
+            "properties": {
+              "foo": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "map_with_value"
+        ],
+        "properties": {
+          "map_with_value": {
+            "type": "object",
+            "required": [
+              "foo"
+            ],
+            "properties": {
+              "foo": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/definitions/Value"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "Value": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "migrate": null,
+  "sudo": null,
+  "responses": {
+    "map_string": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BarResponse",
+      "type": "object",
+      "required": [
+        "foo"
+      ],
+      "properties": {
+        "foo": {
+          "description": "The foo value",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "map_with_value": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BarResponse",
+      "type": "object",
+      "required": [
+        "foo"
+      ],
+      "properties": {
+        "foo": {
+          "description": "The foo value",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "description": "# map-test",
+  "title": "map-test"
+}
