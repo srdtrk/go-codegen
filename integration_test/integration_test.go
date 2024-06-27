@@ -107,7 +107,7 @@ func (s *MySuite) TestQueryClient() {
 	s.GenerateQueryClientTest("testdata/ics721.json")
 	s.GenerateQueryClientTest("testdata/dao-dao-core.json")
 	s.GenerateQueryClientTest("testdata/axone-objectarium.json")
-	s.GenerateMessageTypesTest("testdata/map-test.json")
+	s.GenerateQueryClientTest("testdata/map-test.json")
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {
