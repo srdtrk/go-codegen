@@ -267,8 +267,10 @@ type QueryMsg_OutgoingChannels struct {
 }
 type ExecuteMsg_ReceiveNft Cw721ReceiveMsg
 
-type ExecuteMsg_Pause struct{}
-type ExecuteMsg_Callback CallbackMsg
+type (
+	ExecuteMsg_Pause    struct{}
+	ExecuteMsg_Callback CallbackMsg
+)
 
 type ExecuteMsg_AdminCleanAndBurnNft struct {
 	ClassId    string `json:"class_id"`
