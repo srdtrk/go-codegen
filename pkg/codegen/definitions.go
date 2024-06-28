@@ -69,22 +69,39 @@ func RegisterDefinitions(definitions map[string]*schemas.JSONSchema) bool {
 // and returns true if the definition is successfully registered.
 // If the definition is already registered, it returns false.
 func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
-	// check if the ref is already registered
-	if regSchema, ok := globalDefRegistry[ref]; ok {
+	if generatingDefs {
+		return registerDef(&changesMap, ref, schema)
+	}
+
+	return registerDef(&globalDefRegistry, ref, schema)
+}
+
+func registerDef(registry *map[string]*schemas.JSONSchema, ref string, schema *schemas.JSONSchema) bool {
+	if regSchema, ok := (*registry)[ref]; ok {
 		if err := areDefinitionsEqual(regSchema, schema); err != nil {
 			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations: %s", ref, err.Error()))
 		}
 
+		// If definition is enum, try to merge them
+		if regSchema.Enum != nil && schema.Enum != nil {
+			(*registry)[ref] = mergeEnumDefinitions(regSchema, schema)
+		}
 		return false
 	}
 
-	if generatingDefs {
-		changesMap[ref] = schema
-		return true
+	(*registry)[ref] = schema
+	return true
+}
+
+func mergeEnumDefinitions(a, b *schemas.JSONSchema) *schemas.JSONSchema {
+
+	for _, e := range b.Enum {
+		if !slices.Contains(a.Enum, e) {
+			a.Enum = append(a.Enum, e)
+		}
 	}
 
-	globalDefRegistry[ref] = schema
-	return true
+	return a
 }
 
 // GetDefinition returns a definition from the global definition registry.

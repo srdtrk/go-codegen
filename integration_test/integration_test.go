@@ -94,6 +94,7 @@ func (s *MySuite) TestMessageComposer() {
 	s.GenerateMessageTypesTest("testdata/dao-dao-core.json")
 	s.GenerateMessageTypesTest("testdata/axone-objectarium.json")
 	s.GenerateMessageTypesTest("testdata/map-test.json")
+	s.GenerateMessageTypesTest("testdata/enum-tag.json")
 }
 
 func (s *MySuite) TestQueryClient() {
@@ -108,6 +109,7 @@ func (s *MySuite) TestQueryClient() {
 	s.GenerateQueryClientTest("testdata/dao-dao-core.json")
 	s.GenerateQueryClientTest("testdata/axone-objectarium.json")
 	s.GenerateQueryClientTest("testdata/map-test.json")
+	s.GenerateQueryClientTest("testdata/enum-tag.json")
 }
 
 func (s *MySuite) TestInterchaintestScaffold() {
