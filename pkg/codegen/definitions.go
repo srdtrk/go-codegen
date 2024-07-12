@@ -157,7 +157,7 @@ func areDefinitionsEqual(a, b *schemas.JSONSchema) error {
 	}
 
 	if !slices.Equal(a.Type, b.Type) {
-		return fmt.Errorf("different types %v != %s", a.Type, b.Type)
+		return fmt.Errorf("different types %s != %s", a.Type, b.Type)
 	}
 
 	if len(a.Type) == 1 {
