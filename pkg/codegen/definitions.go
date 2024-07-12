@@ -138,6 +138,10 @@ func generateDefinition(f *jen.File, name string, schema *schemas.JSONSchema) {
 		if err := generateDefinitionType(f, name, schema); err != nil {
 			panic(err)
 		}
+	case isBasicNullable(schema):
+		if err := generateDefinitionBasicNullable(f, name, schema); err != nil {
+			panic(err)
+		}
 	case len(schema.OneOf) != 0:
 		if err := generateDefinitionOneOf(f, name, schema); err != nil {
 			panic(err)
@@ -519,11 +523,35 @@ func generateDefinitionAnyOf(f *jen.File, name string, schema *schemas.JSONSchem
 	return name, nil
 }
 
+// generateDefinitionBasicNullable generates a basic nullable type.
+func generateDefinitionBasicNullable(f *jen.File, name string, schema *schemas.JSONSchema) error {
+	f.Comment(schema.Description)
+	switch schema.Type[0] {
+	case schemas.TypeNameString:
+		f.Type().Id(name).Op("*").String()
+	case schemas.TypeNameInteger:
+		f.Type().Id(name).Op("*").Int()
+	case schemas.TypeNameNumber:
+		f.Type().Id(name).Op("*").Float64()
+	case schemas.TypeNameBoolean:
+		f.Type().Id(name).Op("*").Bool()
+	default:
+		return fmt.Errorf("unsupported type %s for nullable definition %s", schema.Type[0], name)
+	}
+
+	return nil
+}
+
 // validateAsDefinition validates if the schema is a valid definition.
 func validateAsDefinition(name string, schema *schemas.JSONSchema) error {
-	if len(schema.Type) != 1 && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil && len(schema.AnyOf) == 0 {
+	if len(schema.Type) != 1 && !isBasicNullable(schema) && len(schema.OneOf) == 0 && len(schema.AllOf) != 1 && schema.Ref == nil && len(schema.AnyOf) == 0 {
 		return fmt.Errorf("definition %s is unsupported", name)
 	}
 
 	return nil
+}
+
+// isBasicNullable checks if the schema is a basic nullable type.
+func isBasicNullable(schema *schemas.JSONSchema) bool {
+	return len(schema.Type) == 2 && slices.Contains(schema.Type, schemas.TypeNameNull)
 }
