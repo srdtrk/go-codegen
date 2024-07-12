@@ -69,27 +69,20 @@ func RegisterDefinitions(definitions map[string]*schemas.JSONSchema) bool {
 // and returns true if the definition is successfully registered.
 // If the definition is already registered, it returns false.
 func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
+	return registerDef(getRegistryMap(), ref, schema)
+}
+
+// getRegistryMap returns the global definition registry if not generating definitions.
+// Otherwise, it returns the changesMap.
+func getRegistryMap() *map[string]*schemas.JSONSchema {
 	if generatingDefs {
-		return registerDef(&changesMap, ref, schema)
+		return &changesMap
 	}
 
-	return registerDef(&globalDefRegistry, ref, schema)
+	return &globalDefRegistry
 }
 
 func registerDef(registry *map[string]*schemas.JSONSchema, ref string, schema *schemas.JSONSchema) bool {
-	if len(schema.Type) == 1 {
-		switch schema.Type[0] {
-		case schemas.TypeNameString:
-			ref += "_string"
-		case schemas.TypeNameInteger:
-			ref += "_integer"
-		case schemas.TypeNameNumber:
-			ref += "_number"
-		case schemas.TypeNameBoolean:
-			ref += "_boolean"
-		}
-	}
-
 	if regSchema, ok := (*registry)[ref]; ok {
 		if err := areDefinitionsEqual(regSchema, schema); err != nil {
 			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations: %s", ref, err.Error()))

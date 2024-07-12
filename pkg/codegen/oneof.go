@@ -2,7 +2,6 @@ package codegen
 
 import (
 	"fmt"
-	"slices"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
@@ -15,7 +14,6 @@ func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 	ptrFalse := false
 	fields := []jen.Code{}
 
-	generatedProps := []string{}
 	for _, schema := range oneOf {
 		if schema.Title == "" && len(schema.Properties) != 1 {
 			panic(fmt.Errorf("cannot determine the name of the field %v", schema))
@@ -31,20 +29,22 @@ func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 
 			typeName := typePrefix + strcase.ToCamel(jsonKey)
 
+			if _, ok := (*getRegistryMap())[typeName]; ok {
+				typeName += "_2"
+				name += "_2"
+
+				types.DefaultLogger().Warn().Msgf("type name %s already exists, renaming to %s", typeName, typeName)
+			}
+
 			RegisterDefinition(typeName, prop)
 		}
 
 		RegisterDefinitions(schema.Definitions)
 
-		if !slices.Contains(generatedProps, jsonKey) {
-			// add comment
-			fields = append(fields, jen.Comment(schema.Description))
-			// add field
-			fields = append(fields, generateFieldFromSchema(name, jsonKey, schema, &ptrFalse, typePrefix, true))
-			generatedProps = append(generatedProps, jsonKey)
-		} else {
-			types.DefaultLogger().Warn().Msgf("Skipping duplicate enum field %s", jsonKey)
-		}
+		// add comment
+		fields = append(fields, jen.Comment(schema.Description))
+		// add field
+		fields = append(fields, generateFieldFromSchema(name, jsonKey, schema, &ptrFalse, typePrefix, true))
 	}
 	return fields
 }
