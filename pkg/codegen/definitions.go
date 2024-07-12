@@ -77,6 +77,19 @@ func RegisterDefinition(ref string, schema *schemas.JSONSchema) bool {
 }
 
 func registerDef(registry *map[string]*schemas.JSONSchema, ref string, schema *schemas.JSONSchema) bool {
+	if len(schema.Type) == 1 {
+		switch schema.Type[0] {
+		case schemas.TypeNameString:
+			ref += "_string"
+		case schemas.TypeNameInteger:
+			ref += "_integer"
+		case schemas.TypeNameNumber:
+			ref += "_number"
+		case schemas.TypeNameBoolean:
+			ref += "_boolean"
+		}
+	}
+
 	if regSchema, ok := (*registry)[ref]; ok {
 		if err := areDefinitionsEqual(regSchema, schema); err != nil {
 			panic(fmt.Sprintf("duplicate definition `%s` with differing implementations: %s", ref, err.Error()))
