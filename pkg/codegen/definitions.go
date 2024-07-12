@@ -94,7 +94,6 @@ func registerDef(registry *map[string]*schemas.JSONSchema, ref string, schema *s
 }
 
 func mergeEnumDefinitions(a, b *schemas.JSONSchema) *schemas.JSONSchema {
-
 	for _, e := range b.Enum {
 		if !slices.Contains(a.Enum, e) {
 			a.Enum = append(a.Enum, e)

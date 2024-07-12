@@ -2,16 +2,20 @@ package codegen
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
 
 	"github.com/srdtrk/go-codegen/pkg/schemas"
+	"github.com/srdtrk/go-codegen/pkg/types"
 )
 
 func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []jen.Code {
 	ptrFalse := false
 	fields := []jen.Code{}
+
+	generatedProps := []string{}
 	for _, schema := range oneOf {
 		if schema.Title == "" && len(schema.Properties) != 1 {
 			panic(fmt.Errorf("cannot determine the name of the field %v", schema))
@@ -32,10 +36,15 @@ func generateFieldsFromOneOf(oneOf []*schemas.JSONSchema, typePrefix string) []j
 
 		RegisterDefinitions(schema.Definitions)
 
-		// add comment
-		fields = append(fields, jen.Comment(schema.Description))
-		// add field
-		fields = append(fields, generateFieldFromSchema(name, jsonKey, schema, &ptrFalse, typePrefix, true))
+		if !slices.Contains(generatedProps, jsonKey) {
+			// add comment
+			fields = append(fields, jen.Comment(schema.Description))
+			// add field
+			fields = append(fields, generateFieldFromSchema(name, jsonKey, schema, &ptrFalse, typePrefix, true))
+			generatedProps = append(generatedProps, jsonKey)
+		} else {
+			types.DefaultLogger().Warn().Msgf("Skipping duplicate enum field %s", jsonKey)
+		}
 	}
 	return fields
 }
